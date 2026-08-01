@@ -103,3 +103,54 @@ Native package identifiers were intentionally left unchanged to avoid risky appl
 
 ### Profile Screen
 <img src="design/Screenshot/profile.jpg" width="250">
+
+
+## Demo
+
+Coming soon: SAAMAgo app walkthrough video.
+
+
+
+## Project Status
+
+🚧 Currently a frontend prototype with mocked local data.
+
+Future improvements:
+
+- Backend integration
+- Real authentication
+- Payment integration
+- Real-time chat
+- Cloud database
+- Location-based item discovery
+
+
+## Features
+
+- User onboarding and authentication flow
+- Item discovery and search
+- Borrow and lending workflow
+- Item listing system
+- Request management
+- User profile and reviews
+- Modern dark-themed UI
+
+
+## Tech Stack
+
+- Flutter
+- Dart
+- Material 3
+- Android SDK
+- Responsive UI Design
+- Local Mock Data Management
+- Git & GitHub
+
+
+## Author
+
+**Syed Aqdas Imam**
+
+Computer Science & Engineering Student
+
+GitHub: https://github.com/syedaqdas
