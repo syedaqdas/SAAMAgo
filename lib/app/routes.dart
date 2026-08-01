@@ -1,0 +1,22 @@
+abstract final class AppRoutes {
+  static const splash = '/';
+  static const onboarding = '/onboarding';
+  static const login = '/login';
+  static const otp = '/otp';
+  static const location = '/location';
+  static const shell = '/shell';
+  static const itemDetails = '/item-details';
+  static const borrowConfirmation = '/borrow-confirmation';
+  static const requests = '/requests';
+  static const chat = '/chat';
+  static const wallet = '/wallet';
+  static const listItem = '/list-item';
+  static const notifications = '/notifications';
+  static const profile = '/profile';
+  static const settings = '/settings';
+  static const filters = '/filters';
+  static const mapView = '/map-view';
+  static const reviews = '/reviews';
+  static const refer = '/refer';
+  static const help = '/help';
+}
