@@ -86,12 +86,17 @@ Native package identifiers were intentionally left unchanged to avoid risky appl
 - Add QR-based handover and return confirmation.
 - Persist favourites, listings, wallet events, notifications, and onboarding completion.
 
+
 ## Screenshots
 
-Add screenshots here after running the app on a device or emulator:
+### Splash Screen
+<img src="design/screenshots/splash.jpg" width="250">
 
-- Splash and onboarding
-- Home dashboard
-- Explore and map view
-- Item details and borrow confirmation
-- Requests, wallet, profile, and support
+### Home Dashboard
+<img src="design/screenshots/home.jpg" width="250">
+
+### Explore Screen
+<img src="design/screenshots/explore.jpg" width="250">
+
+### Profile Screen
+<img src="design/screenshots/profile.jpg" width="250">
