@@ -90,13 +90,16 @@ Native package identifiers were intentionally left unchanged to avoid risky appl
 ## Screenshots
 
 ### Splash Screen
-<img src="design/screenshots/splash.jpg" width="250">
+<img src="design/Screenshot/splash.jpg" width="250">
+
+### Login Screen
+<img src="design/Screenshot/login.jpg" width="250">
 
 ### Home Dashboard
-<img src="design/screenshots/home.jpg" width="250">
+<img src="design/Screenshot/home.jpg" width="250">
 
 ### Explore Screen
-<img src="design/screenshots/explore.jpg" width="250">
+<img src="design/Screenshot/explore.jpg" width="250">
 
 ### Profile Screen
-<img src="design/screenshots/profile.jpg" width="250">
+<img src="design/Screenshot/profile.jpg" width="250">
