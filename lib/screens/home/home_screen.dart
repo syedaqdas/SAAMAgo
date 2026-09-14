@@ -7,6 +7,7 @@ import '../../core/widgets/app_panel.dart';
 import '../../core/widgets/item_card.dart';
 import '../../core/widgets/section_header.dart';
 import '../../data/app_state.dart';
+import '../../models/rental_request.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -123,9 +124,9 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    '₹2,589',
-                    style: TextStyle(
+                  Text(
+                    '₹${store.walletBalance}',
+                    style: const TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.w900,
                       height: 1,
@@ -194,58 +195,50 @@ class HomeScreen extends StatelessWidget {
               onAction: () => Navigator.pushNamed(context, AppRoutes.requests),
             ),
             const SizedBox(height: 12),
-            ActivityCard(
-              title: 'Borrowed Canon DSLR',
-              subtitle: 'Due on 28 May',
-              icon: Icons.photo_camera_rounded,
-              status: 'Active',
-              statusColor: AppColors.success,
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.itemDetails,
-                arguments: store.items[0],
-              ),
-            ),
-            const SizedBox(height: 10),
-            ActivityCard(
-              title: 'Lending Camping Tent',
-              subtitle: 'Due on 30 May',
-              icon: Icons.terrain_rounded,
-              status: 'Active',
-              statusColor: AppColors.success,
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.itemDetails,
-                arguments: store.items[3],
-              ),
-            ),
-            const SizedBox(height: 10),
-            ActivityCard(
-              title: 'Rich Dad Poor Dad',
-              subtitle: 'Request accepted',
-              icon: Icons.menu_book_rounded,
-              status: 'Completed',
-              statusColor: AppColors.success,
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.itemDetails,
-                arguments: store.items[9],
-              ),
-            ),
-            const SizedBox(height: 10),
-            ActivityCard(
-              title: 'Requested Drill Machine',
-              subtitle: 'Pending approval',
-              icon: Icons.construction_rounded,
-              status: 'Pending',
-              statusColor: AppColors.warning,
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.itemDetails,
-                arguments: store.items[1],
-              ),
-            ),
-            const SizedBox(height: 24),
+            ...store.requests.take(4).map((request) {
+              Color statusColor;
+              String statusText;
+              String subtitleText = 'Due on ${request.dateLabel}';
+              
+              switch (request.status) {
+                case RequestStatus.pending:
+                  statusColor = AppColors.warning;
+                  statusText = 'Pending';
+                  subtitleText = 'Pending approval';
+                  break;
+                case RequestStatus.accepted:
+                  statusColor = AppColors.success;
+                  statusText = 'Active';
+                  break;
+                case RequestStatus.completed:
+                  statusColor = AppColors.success;
+                  statusText = 'Completed';
+                  subtitleText = 'Request completed';
+                  break;
+                case RequestStatus.cancelled:
+                  statusColor = AppColors.error;
+                  statusText = 'Cancelled';
+                  subtitleText = 'Request cancelled';
+                  break;
+              }
+              
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: ActivityCard(
+                  title: request.item.name,
+                  subtitle: subtitleText,
+                  icon: request.item.icon,
+                  status: statusText,
+                  statusColor: statusColor,
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.itemDetails,
+                    arguments: request.item,
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 14),
             AppPanel(
               child: Row(
                 children: [

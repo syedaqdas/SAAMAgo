@@ -17,6 +17,7 @@ class RentalItem {
     required this.icon,
     required this.gradient,
     this.isFavourite = false,
+    this.imagePath,
   });
 
   final String id;
@@ -34,6 +35,7 @@ class RentalItem {
   final IconData icon;
   final List<Color> gradient;
   final bool isFavourite;
+  final String? imagePath;
 
   RentalItem copyWith({
     String? id,
@@ -51,6 +53,7 @@ class RentalItem {
     IconData? icon,
     List<Color>? gradient,
     bool? isFavourite,
+    String? imagePath,
   }) {
     return RentalItem(
       id: id ?? this.id,
@@ -68,6 +71,49 @@ class RentalItem {
       icon: icon ?? this.icon,
       gradient: gradient ?? this.gradient,
       isFavourite: isFavourite ?? this.isFavourite,
+      imagePath: imagePath ?? this.imagePath,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'category': category,
+      'pricePerDay': pricePerDay,
+      'distanceKm': distanceKm,
+      'rating': rating,
+      'deposit': deposit,
+      'condition': condition,
+      'availability': availability,
+      'description': description,
+      'ownerName': ownerName,
+      'ownerTrustScore': ownerTrustScore,
+      'icon': icon.codePoint,
+      'gradient': gradient.map((c) => c.toARGB32()).toList(),
+      'isFavourite': isFavourite,
+      'imagePath': imagePath,
+    };
+  }
+
+  factory RentalItem.fromJson(Map<String, dynamic> json) {
+    return RentalItem(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      category: json['category'] as String,
+      pricePerDay: json['pricePerDay'] as int,
+      distanceKm: (json['distanceKm'] as num).toDouble(),
+      rating: (json['rating'] as num).toDouble(),
+      deposit: json['deposit'] as int,
+      condition: json['condition'] as String,
+      availability: json['availability'] as String,
+      description: json['description'] as String,
+      ownerName: json['ownerName'] as String,
+      ownerTrustScore: json['ownerTrustScore'] as int,
+      icon: IconData(json['icon'] as int, fontFamily: 'MaterialIcons'),
+      gradient: (json['gradient'] as List).map((c) => Color(c as int)).toList(),
+      isFavourite: json['isFavourite'] as bool? ?? false,
+      imagePath: json['imagePath'] as String?,
     );
   }
 }

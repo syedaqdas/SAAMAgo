@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/validators.dart';
@@ -33,6 +36,7 @@ class _ListItemScreenState extends State<ListItemScreen> {
   String _availability = 'Today';
   bool _delivery = true;
   bool _isLoading = false;
+  String? _imagePath;
 
   @override
   void dispose() {
@@ -42,6 +46,23 @@ class _ListItemScreenState extends State<ListItemScreen> {
     _depositController.dispose();
     _locationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _imagePath = image.path;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to pick image: $e')),
+      );
+    }
   }
 
   Future<void> _publish() async {
@@ -62,6 +83,7 @@ class _ListItemScreenState extends State<ListItemScreen> {
       condition: _condition,
       availability: _availability,
       delivery: _delivery,
+      imagePath: _imagePath,
     );
     setState(() => _isLoading = false);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -73,6 +95,7 @@ class _ListItemScreenState extends State<ListItemScreen> {
     _priceController.clear();
     _depositController.clear();
     _locationController.clear();
+    setState(() => _imagePath = null);
   }
 
   @override
@@ -99,24 +122,53 @@ class _ListItemScreenState extends State<ListItemScreen> {
               height: 92,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: 4,
+                itemCount: _imagePath != null ? 1 : 4,
                 separatorBuilder: (context, index) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
+                  if (_imagePath != null) {
+                    return Stack(
+                      children: [
+                        Container(
+                          width: 92,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppColors.border),
+                            image: DecorationImage(
+                              image: FileImage(File(_imagePath!)),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: -4,
+                          top: -4,
+                          child: IconButton(
+                            icon: const Icon(Icons.cancel, color: Colors.white),
+                            onPressed: () => setState(() => _imagePath = null),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
                   final isAdd = index == 0;
-                  return Container(
-                    width: 92,
-                    decoration: BoxDecoration(
-                      color: AppColors.cardSurface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Icon(
-                      isAdd
-                          ? Icons.add_photo_alternate_rounded
-                          : Icons.inventory_2_rounded,
-                      color: isAdd
-                          ? AppColors.lightPurple
-                          : AppColors.secondaryText,
+                  return InkWell(
+                    onTap: isAdd ? _pickImage : null,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: 92,
+                      decoration: BoxDecoration(
+                        color: AppColors.cardSurface,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Icon(
+                        isAdd
+                            ? Icons.add_photo_alternate_rounded
+                            : Icons.inventory_2_rounded,
+                        color: isAdd
+                            ? AppColors.lightPurple
+                            : AppColors.secondaryText,
+                      ),
                     ),
                   );
                 },

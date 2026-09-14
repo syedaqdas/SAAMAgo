@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../app/routes.dart';
@@ -142,6 +144,18 @@ class _ItemThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (item.imagePath != null) {
+      return Container(
+        height: height,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: FileImage(File(item.imagePath!)),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
     return Container(
       height: height,
       width: double.infinity,

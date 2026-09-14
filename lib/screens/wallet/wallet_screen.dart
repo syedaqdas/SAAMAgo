@@ -40,9 +40,9 @@ class WalletScreen extends StatelessWidget {
                   style: TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  '₹2,589',
-                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900),
+                Text(
+                  '₹${store.walletBalance}',
+                  style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: 18),
                 PrimaryButton(

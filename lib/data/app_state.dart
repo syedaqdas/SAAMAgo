@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/chat_message.dart';
 import '../models/notification_item.dart';
@@ -17,7 +19,59 @@ class SaamaGoStore extends ChangeNotifier {
       _messages = List<ChatMessage>.from(MockData.messages),
       _reviews = List<ReviewItem>.from(MockData.reviews) {
     _requests = MockData.requests(_items);
+    _loadPersistedData();
   }
+
+  Future<void> _loadPersistedData() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Load wallet balance
+    final savedBalance = prefs.getInt('walletBalance');
+    if (savedBalance != null) {
+      _walletBalance = savedBalance;
+    }
+
+    // Load persisted items
+    final itemsJson = prefs.getStringList('persistedItems');
+    if (itemsJson != null) {
+      final persistedItems = itemsJson
+          .map((e) => RentalItem.fromJson(jsonDecode(e) as Map<String, dynamic>))
+          .toList();
+      _items.insertAll(0, persistedItems);
+    }
+
+    // Load persisted requests
+    final requestsJson = prefs.getStringList('persistedRequests');
+    if (requestsJson != null) {
+      final persistedRequests = requestsJson
+          .map((e) => RentalRequest.fromJson(jsonDecode(e) as Map<String, dynamic>))
+          .toList();
+      _requests.insertAll(0, persistedRequests);
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> _savePersistedItems() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Only save items that are not from mock data (check ID or just save all added items)
+    // For simplicity, let's assume mock items have specific IDs like 'camera', 'drill'
+    // But saving all items might be easier if not too large, or just new items
+    final customItems = _items.where((i) => i.id.startsWith('item-')).toList();
+    final jsonList = customItems.map((e) => jsonEncode(e.toJson())).toList();
+    await prefs.setStringList('persistedItems', jsonList);
+  }
+
+  Future<void> _savePersistedRequests() async {
+    final prefs = await SharedPreferences.getInstance();
+    final customRequests = _requests.where((r) => r.id.startsWith('req-') && r.id.length > 5).toList(); 
+    // mock requests are req-1, req-2. new requests use timestamp
+    final jsonList = customRequests.map((e) => jsonEncode(e.toJson())).toList();
+    await prefs.setStringList('persistedRequests', jsonList);
+  }
+
+  int _walletBalance = 2589;
+  int get walletBalance => _walletBalance;
 
   final UserProfile profile = MockData.profile;
   final List<RentalItem> _items;
@@ -169,6 +223,7 @@ class SaamaGoStore extends ChangeNotifier {
         dateLabel: 'Today',
       ),
     );
+    _savePersistedRequests();
     notifyListeners();
   }
 
@@ -181,6 +236,7 @@ class SaamaGoStore extends ChangeNotifier {
     required String condition,
     required String availability,
     required bool delivery,
+    String? imagePath,
   }) {
     _items.insert(
       0,
@@ -201,8 +257,10 @@ class SaamaGoStore extends ChangeNotifier {
             ? Icons.local_shipping_rounded
             : Icons.inventory_2_rounded,
         gradient: const [Color(0xFFA78BFA), Color(0xFF312E81)],
+        imagePath: imagePath,
       ),
     );
+    _savePersistedItems();
     notifyListeners();
   }
 
