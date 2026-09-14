@@ -1,19 +1,24 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../app/routes.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_strings.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/app_panel.dart';
 import '../../core/widgets/primary_button.dart';
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({required this.mobile, super.key});
+  const OtpScreen({
+    required this.mobile,
+    required this.verificationId,
+    super.key,
+  });
 
   final String mobile;
+  final String verificationId;
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -26,10 +31,12 @@ class _OtpScreenState extends State<OtpScreen> {
   int _seconds = 30;
   bool _isLoading = false;
   String? _error;
+  late String _verificationId;
 
   @override
   void initState() {
     super.initState();
+    _verificationId = widget.verificationId;
     _startTimer();
   }
 
@@ -50,20 +57,29 @@ class _OtpScreenState extends State<OtpScreen> {
       setState(() => _error = 'Enter the six-digit code');
       return;
     }
-    if (_controller.text != AppStrings.demoOtp) {
-      setState(() => _error = 'Invalid code. Try again.');
-      return;
-    }
+    
     setState(() {
       _error = null;
       _isLoading = true;
     });
-    await Future<void>.delayed(const Duration(milliseconds: 650));
-    if (!mounted) {
-      return;
+
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: _verificationId,
+        smsCode: _controller.text,
+      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      Navigator.pushReplacementNamed(context, AppRoutes.location);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _error = 'Invalid code. Try again.';
+      });
     }
-    setState(() => _isLoading = false);
-    Navigator.pushReplacementNamed(context, AppRoutes.location);
   }
 
   @override
@@ -168,13 +184,35 @@ class _OtpScreenState extends State<OtpScreen> {
                     const SizedBox(height: 18),
                     TextButton(
                       onPressed: _seconds == 0
-                          ? () {
+                          ? () async {
                               _startTimer();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('A fresh demo code was sent.'),
-                                ),
-                              );
+                              try {
+                                await FirebaseAuth.instance.verifyPhoneNumber(
+                                  phoneNumber: '+91${widget.mobile}',
+                                  verificationCompleted: (_) {},
+                                  verificationFailed: (e) {
+                                    if (!context.mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(e.message ?? 'Error')),
+                                    );
+                                  },
+                                  codeSent: (verificationId, _) {
+                                    if (!context.mounted) return;
+                                    setState(() {
+                                      _verificationId = verificationId;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('OTP sent successfully.')),
+                                    );
+                                  },
+                                  codeAutoRetrievalTimeout: (_) {},
+                                );
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to resend: $e')),
+                                );
+                              }
                             }
                           : null,
                       child: Text(

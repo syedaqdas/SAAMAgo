@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/routes.dart';
@@ -125,11 +126,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Icons.chevron_right_rounded,
                   color: AppColors.error,
                 ),
-                onTap: () => Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  AppRoutes.login,
-                  (route) => false,
-                ),
+                onTap: () async {
+                  await FirebaseAuth.instance.signOut();
+                  if (!context.mounted) return;
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.login,
+                    (route) => false,
+                  );
+                },
               ),
             ),
           ],

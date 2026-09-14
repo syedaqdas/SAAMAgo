@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -28,16 +29,56 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     setState(() => _isLoading = true);
-    await Future<void>.delayed(const Duration(milliseconds: 650));
-    if (!mounted) {
-      return;
+
+    final mobile = '+91${_mobileController.text.trim()}';
+
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: mobile,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          try {
+            await FirebaseAuth.instance.signInWithCredential(credential);
+            if (!mounted) return;
+            setState(() => _isLoading = false);
+            Navigator.pushReplacementNamed(context, AppRoutes.location);
+          } catch (e) {
+            if (!mounted) return;
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Auto-verification failed: $e')),
+            );
+          }
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          if (!mounted) return;
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.message ?? 'Verification failed')),
+          );
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          if (!mounted) return;
+          setState(() => _isLoading = false);
+          Navigator.pushNamed(
+            context,
+            AppRoutes.otp,
+            arguments: {
+              'mobile': _mobileController.text.trim(),
+              'verificationId': verificationId,
+            },
+          );
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          // Timeout handled silently. User can request resend.
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
-    setState(() => _isLoading = false);
-    Navigator.pushNamed(
-      context,
-      AppRoutes.otp,
-      arguments: _mobileController.text.trim(),
-    );
   }
 
   @override

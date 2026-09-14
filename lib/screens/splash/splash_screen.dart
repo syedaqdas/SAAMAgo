@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/routes.dart';
@@ -38,7 +39,21 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) {
       return;
     }
-    Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+    
+    bool isLoggedIn = false;
+    try {
+      if (FirebaseAuth.instance.currentUser != null) {
+        isLoggedIn = true;
+      }
+    } catch (_) {
+      // Fallback for widget tests where Firebase is not initialized
+    }
+    
+    if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, AppRoutes.shell);
+    } else {
+      Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+    }
   }
 
   @override

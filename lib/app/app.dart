@@ -76,7 +76,11 @@ class _SaamaGoAppState extends State<SaamaGoApp> {
         page = const LoginScreen();
         break;
       case AppRoutes.otp:
-        page = OtpScreen(mobile: settings.arguments as String? ?? '9876543210');
+        final args = settings.arguments as Map<String, dynamic>? ?? {};
+        page = OtpScreen(
+          mobile: args['mobile'] as String? ?? '9876543210',
+          verificationId: args['verificationId'] as String? ?? '',
+        );
         break;
       case AppRoutes.location:
         page = const LocationPermissionScreen();
