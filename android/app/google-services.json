@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "201171914745",
+    "project_id": "saamago-87811",
+    "storage_bucket": "saamago-87811.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:201171914745:android:4305f9bda2c6a1375db728",
+        "android_client_info": {
+          "package_name": "com.eskoolx.app.eskoolx"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRIK9KtjQZYriqFzxL24YC--hj7TzttZ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
