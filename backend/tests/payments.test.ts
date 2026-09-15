@@ -36,11 +36,12 @@ jest.mock('razorpay', () => {
 });
 
 import * as admin from 'firebase-admin';
-import { razorpay } from '../src/config/razorpay';
+import { getRazorpay } from '../src/config/razorpay';
 
 describe('Payments API', () => {
   beforeEach(() => { 
     jest.clearAllMocks(); 
+    process.env.RAZORPAY_KEY_ID = 'test_id';
     process.env.RAZORPAY_KEY_SECRET = 'secret';
     process.env.RAZORPAY_WEBHOOK_SECRET = 'whsec_secret';
   });
@@ -72,7 +73,8 @@ describe('Payments API', () => {
       
       expect(res.status).toBe(200);
       expect(res.body.orderId).toBe('order_exist123');
-      expect(razorpay.orders.create).not.toHaveBeenCalled();
+      const rzp = getRazorpay();
+      expect(rzp?.orders.create).not.toHaveBeenCalled();
     });
 
     it('should enforce transaction ownership', async () => {

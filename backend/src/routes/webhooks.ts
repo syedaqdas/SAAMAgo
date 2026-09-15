@@ -6,7 +6,12 @@ const router = Router();
 
 router.post('/razorpay', async (req: Request, res: Response): Promise<void> => {
   try {
-    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || '';
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      res.status(503).send('Payment gateway is not configured');
+      return;
+    }
+
     const signature = req.headers['x-razorpay-signature'] as string;
 
     if (!signature) {

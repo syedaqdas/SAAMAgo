@@ -2,12 +2,18 @@ import { Router, Response } from 'express';
 import crypto from 'crypto';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { db } from '../config/firebase';
-import { razorpay } from '../config/razorpay';
+import { getRazorpay } from '../config/razorpay';
 
 const router = Router();
 
 router.post('/createOrder', authenticate, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      res.status(503).json({ error: 'Payment gateway is not configured' });
+      return;
+    }
+
     const { transactionId } = req.body;
     const uid = req.user?.uid;
 
@@ -110,7 +116,12 @@ router.post('/verifyPayment', authenticate, async (req: AuthenticatedRequest, re
       return;
     }
 
-    const secret = process.env.RAZORPAY_KEY_SECRET || '';
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!secret) {
+      res.status(503).json({ error: 'Payment gateway is not configured' });
+      return;
+    }
+
     const generatedSignature = crypto
       .createHmac('sha256', secret)
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
