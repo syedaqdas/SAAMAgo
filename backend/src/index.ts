@@ -21,6 +21,10 @@ app.get('/', (req, res) => {
   res.send('SAAMAgo API is running');
 });
 
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'saamago-backend' });
+});
+
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
   app.listen(PORT, () => {

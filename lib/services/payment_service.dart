@@ -7,16 +7,15 @@ import '../models/transaction_model.dart';
 import 'transaction_service.dart';
 import 'package:flutter/foundation.dart';
 
+import '../core/constants/api_constants.dart';
+
 class PaymentService {
   final Razorpay _razorpay = Razorpay();
   final TransactionService _transactionService = TransactionService();
   
-  // Use 10.0.2.2 for Android Emulator, localhost for iOS simulator, or real IP for physical devices.
-  static const String _backendBaseUrl = 'http://10.0.2.2:3000';
+  static const String _backendBaseUrl = ApiConstants.baseUrl;
+  static const Duration _timeout = Duration(seconds: 15);
   
-  // The key id is fetched from backend or hardcoded here depending on architecture.
-  // We'll receive it from /createOrder response to keep it safe.
-  // We'll receive it from /createOrder response to keep it safe.
   String? _currentPendingTransactionId;
 
   Function(String)? onPaymentSuccess;
@@ -26,6 +25,18 @@ class PaymentService {
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  Future<bool> checkBackendHealth() async {
+    try {
+      final response = await http
+          .get(Uri.parse('$_backendBaseUrl${ApiConstants.healthCheck}'))
+          .timeout(_timeout);
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Backend health check failed: $e');
+      return false;
+    }
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
@@ -111,21 +122,27 @@ class PaymentService {
 
     final idToken = await currentUser.getIdToken();
     
-    final response = await http.post(
-      Uri.parse('$_backendBaseUrl/payments/createOrder'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $idToken',
-      },
-      body: jsonEncode({
-        'transactionId': transactionId,
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$_backendBaseUrl${ApiConstants.createOrder}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: jsonEncode({
+          'transactionId': transactionId,
+        }),
+      ).timeout(_timeout);
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to create order: ${response.body}');
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to create order: ${response.statusCode} - ${response.body}');
+      }
+    } on TimeoutException {
+      throw Exception('Connection to server timed out. Please check your internet or try again later.');
+    } catch (e) {
+      throw Exception('Network error or server unavailable: $e');
     }
   }
 
@@ -140,22 +157,28 @@ class PaymentService {
 
     final idToken = await currentUser.getIdToken();
 
-    final response = await http.post(
-      Uri.parse('$_backendBaseUrl/payments/verifyPayment'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $idToken',
-      },
-      body: jsonEncode({
-        'transactionId': transactionId,
-        'razorpayOrderId': orderId,
-        'razorpayPaymentId': paymentId,
-        'razorpaySignature': signature,
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$_backendBaseUrl${ApiConstants.verifyPayment}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: jsonEncode({
+          'transactionId': transactionId,
+          'razorpayOrderId': orderId,
+          'razorpayPaymentId': paymentId,
+          'razorpaySignature': signature,
+        }),
+      ).timeout(_timeout);
 
-    if (response.statusCode != 200) {
-      throw Exception('Payment verification failed: ${response.body}');
+      if (response.statusCode != 200) {
+        throw Exception('Payment verification failed: ${response.statusCode} - ${response.body}');
+      }
+    } on TimeoutException {
+      throw Exception('Connection to server timed out during verification.');
+    } catch (e) {
+      throw Exception('Network error or server unavailable during verification: $e');
     }
   }
 
