@@ -6,7 +6,7 @@ import '../models/notification_item.dart';
 import '../models/rental_item.dart';
 import '../models/rental_request.dart';
 import '../models/review_item.dart';
-import '../models/transaction_item.dart';
+import '../models/transaction_model.dart';
 
 
 abstract final class MockData {
@@ -291,34 +291,42 @@ abstract final class MockData {
     ),
   ];
 
-  static final transactions = <TransactionItem>[
-    TransactionItem(
-      title: 'Added Money',
-      subtitle: 'Today, 2:25 PM',
+  static final transactions = <TransactionModel>[
+    TransactionModel(
+      id: 'mock-t-1',
+      userId: 'mock_uid',
       amount: 1000,
-      isPositive: true,
-      icon: Icons.add_card_rounded,
+      type: TransactionType.deposit,
+      status: TransactionStatus.completed,
+      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      description: 'Added Money via Card',
     ),
-    TransactionItem(
-      title: 'Refund Received',
-      subtitle: '18 May 2025',
+    TransactionModel(
+      id: 'mock-t-2',
+      userId: 'mock_uid',
       amount: 900,
-      isPositive: true,
-      icon: Icons.refresh_rounded,
+      type: TransactionType.refund,
+      status: TransactionStatus.completed,
+      createdAt: DateTime.now().subtract(const Duration(days: 3)),
+      description: 'Refund for cancelled request',
     ),
-    TransactionItem(
-      title: 'Payment for DSLR',
-      subtitle: '14 May 2025',
+    TransactionModel(
+      id: 'mock-t-3',
+      userId: 'mock_uid',
       amount: 2300,
-      isPositive: false,
-      icon: Icons.photo_camera_rounded,
+      type: TransactionType.payment,
+      status: TransactionStatus.completed,
+      createdAt: DateTime.now().subtract(const Duration(days: 7)),
+      description: 'Payment for DSLR Camera',
     ),
-    TransactionItem(
-      title: 'Security Deposit Held',
-      subtitle: '13 May 2025',
+    TransactionModel(
+      id: 'mock-t-4',
+      userId: 'mock_uid',
       amount: 2000,
-      isPositive: false,
-      icon: Icons.lock_rounded,
+      type: TransactionType.escrowHold,
+      status: TransactionStatus.pending,
+      createdAt: DateTime.now().subtract(const Duration(days: 8)),
+      description: 'Security Deposit Held',
     ),
   ];
 

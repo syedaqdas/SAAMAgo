@@ -8,6 +8,8 @@ import '../../core/widgets/item_card.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../data/app_state.dart';
 import '../../models/rental_item.dart';
+import '../../services/payment_service.dart';
+import '../../models/transaction_model.dart';
 
 class BorrowConfirmationScreen extends StatefulWidget {
   const BorrowConfirmationScreen({required this.item, super.key});
@@ -24,6 +26,44 @@ class _BorrowConfirmationScreenState extends State<BorrowConfirmationScreen> {
   String _pickupOption = 'Self Pickup';
   String _paymentMethod = 'UPI';
   bool _isLoading = false;
+  late PaymentService _paymentService;
+
+  
+  @override
+  void initState() {
+    super.initState();
+    _paymentService = PaymentService()
+      ..onPaymentSuccess = _handlePaymentSuccess
+      ..onPaymentError = _handlePaymentError;
+  }
+
+  void _handlePaymentSuccess(String msg) async {
+    if (!mounted) return;
+    try {
+      await AppStateScope.of(context).addBorrowRequest(widget.item, _durationDays, _total);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.shell, (route) => false, arguments: 3);
+    } catch (e) {
+      _handlePaymentError(e.toString());
+    }
+  }
+
+  void _handlePaymentError(String msg) {
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
+  }
+
+  @override
+  void dispose() {
+    _paymentService.dispose();
+    super.dispose();
+  }
 
   int get _rent => widget.item.pricePerDay * _durationDays;
   int get _platformFee => 49;
@@ -31,31 +71,11 @@ class _BorrowConfirmationScreenState extends State<BorrowConfirmationScreen> {
 
   Future<void> _confirm() async {
     setState(() => _isLoading = true);
-    await Future<void>.delayed(const Duration(milliseconds: 850));
-    if (!mounted) {
-      return;
-    }
-    try {
-      await AppStateScope.of(
-        context,
-      ).addBorrowRequest(widget.item, _durationDays, _total);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Borrow request created as Pending.')),
-      );
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.shell,
-        (route) => false,
-        arguments: 3,
-      );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-      );
-    }
+    await _paymentService.processPayment(
+      amountInINR: _total,
+      description: 'Borrow ${widget.item.name} for $_durationDays days',
+      type: TransactionType.escrowHold,
+    );
   }
 
   @override

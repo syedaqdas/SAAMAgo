@@ -9,7 +9,8 @@ import '../models/notification_item.dart';
 import '../models/rental_item.dart';
 import '../models/rental_request.dart';
 import '../models/review_item.dart';
-import '../models/transaction_item.dart';
+import '../models/transaction_model.dart';
+import '../services/transaction_service.dart';
 import '../models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/user_service.dart';
@@ -23,10 +24,11 @@ class SaamaGoStore extends ChangeNotifier {
   final _listingService = ListingService();
   final _borrowRequestService = BorrowRequestService();
   final _chatService = ChatService();
+  final _transactionService = TransactionService();
   SaamaGoStore()
     : _items = List<RentalItem>.from(MockData.items),
       _notifications = List<NotificationItem>.from(MockData.notifications),
-      _transactions = List<TransactionItem>.from(MockData.transactions),
+      _transactions = List<TransactionModel>.from(MockData.transactions),
       _messages = List<ChatMessage>.from(MockData.messages),
       _reviews = List<ReviewItem>.from(MockData.reviews) {
     _requests.addAll(MockData.requests(_items));
@@ -126,6 +128,7 @@ class SaamaGoStore extends ChangeNotifier {
       );
 
       _chatsSubscription?.cancel();
+    _transactionsSubscription?.cancel();
       isChatsLoading = true;
       _chatsSubscription = _chatService.getUserChatsStream(currentUser.uid).listen(
         (firestoreChats) {
@@ -142,9 +145,50 @@ class SaamaGoStore extends ChangeNotifier {
         },
       );
 
+      await fetchTransactions();
       await fetchListings();
       await fetchRequests();
     }
+  }
+
+  
+  Future<void> fetchTransactions() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    _transactionsSubscription?.cancel();
+    isTransactionsLoading = true;
+    transactionsError = null;
+    notifyListeners();
+
+    _transactionsSubscription = _transactionService.getUserTransactionsStream(currentUser.uid).listen(
+      (firestoreTransactions) {
+        _transactions.clear();
+        _transactions.addAll(firestoreTransactions);
+        
+        // Compute wallet balance
+        int newBalance = 0;
+        for (var t in firestoreTransactions) {
+          if (t.status == TransactionStatus.completed) {
+             if (t.isPositive) {
+               newBalance += t.amount;
+             } else {
+               newBalance -= t.amount;
+             }
+          }
+        }
+        _walletBalance = newBalance;
+        
+        isTransactionsLoading = false;
+        transactionsError = null;
+        notifyListeners();
+      },
+      onError: (error) {
+        isTransactionsLoading = false;
+        transactionsError = _parseError(error);
+        notifyListeners();
+      },
+    );
   }
 
   Future<void> fetchRequests() async {
@@ -239,6 +283,7 @@ class SaamaGoStore extends ChangeNotifier {
     _requestsSubscription?.cancel();
     _profileSubscription?.cancel();
     _chatsSubscription?.cancel();
+    _transactionsSubscription?.cancel();
     super.dispose();
   }
 
@@ -271,7 +316,10 @@ class SaamaGoStore extends ChangeNotifier {
   bool isRequestsLoading = false;
   String? requestsError;
   final List<NotificationItem> _notifications;
-  final List<TransactionItem> _transactions;
+  final List<TransactionModel> _transactions;
+  StreamSubscription<List<TransactionModel>>? _transactionsSubscription;
+  bool isTransactionsLoading = false;
+  String? transactionsError;
   final List<ChatModel> _chats = [];
   StreamSubscription<List<ChatModel>>? _chatsSubscription;
   bool isChatsLoading = false;
@@ -295,7 +343,7 @@ class SaamaGoStore extends ChangeNotifier {
   List<RentalItem> get items => List.unmodifiable(_items);
   List<RentalRequest> get requests => List.unmodifiable(_requests);
   List<NotificationItem> get notifications => List.unmodifiable(_notifications);
-  List<TransactionItem> get transactions => List.unmodifiable(_transactions);
+  List<TransactionModel> get transactions => List.unmodifiable(_transactions);
   List<ChatMessage> get messages => List.unmodifiable(_messages);
   List<ReviewItem> get reviews => List.unmodifiable(_reviews);
   int get unreadNotifications =>

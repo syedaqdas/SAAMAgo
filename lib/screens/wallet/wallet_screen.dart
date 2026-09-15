@@ -6,11 +6,48 @@ import '../../core/widgets/app_panel.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../core/widgets/section_header.dart';
 import '../../data/app_state.dart';
+import '../../services/payment_service.dart';
+import '../../models/transaction_model.dart';
 
-class WalletScreen extends StatelessWidget {
+class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key, this.showAppBar = false});
 
   final bool showAppBar;
+
+  @override
+  State<WalletScreen> createState() => _WalletScreenState();
+}
+
+class _WalletScreenState extends State<WalletScreen> {
+  late PaymentService _paymentService;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _paymentService = PaymentService()
+      ..onPaymentSuccess = _handlePaymentSuccess
+      ..onPaymentError = _handlePaymentError;
+  }
+
+  void _handlePaymentSuccess(String msg) {
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  void _handlePaymentError(String msg) {
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  @override
+  void dispose() {
+    _paymentService.dispose();
+    super.dispose();
+  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -19,17 +56,17 @@ class WalletScreen extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.fromLTRB(
           20,
-          showAppBar ? 8 : 12,
+          widget.showAppBar ? 8 : 12,
           20,
-          showAppBar ? 24 : 112,
+          widget.showAppBar ? 24 : 112,
         ),
         children: [
-          if (!showAppBar)
+          if (!widget.showAppBar)
             const Text(
               'My Wallet',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
             ),
-          if (!showAppBar) const SizedBox(height: 18),
+          if (!widget.showAppBar) const SizedBox(height: 18),
           AppPanel(
             gradient: AppColors.brandGradient,
             child: Column(
@@ -49,11 +86,15 @@ class WalletScreen extends StatelessWidget {
                   label: 'Add Money',
                   icon: Icons.add_card_rounded,
                   height: 48,
-                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Add money is mocked for this demo.'),
-                    ),
-                  ),
+                  isLoading: _isLoading,
+                  onPressed: () async {
+                    setState(() => _isLoading = true);
+                    await _paymentService.processPayment(
+                      amountInINR: 500, // Example fixed amount for demo
+                      description: 'Wallet Top-up',
+                      type: TransactionType.deposit,
+                    );
+                  },
                 ),
               ],
             ),
@@ -153,7 +194,7 @@ class WalletScreen extends StatelessWidget {
       ),
     );
 
-    if (!showAppBar) {
+    if (!widget.showAppBar) {
       return body;
     }
     return Scaffold(
