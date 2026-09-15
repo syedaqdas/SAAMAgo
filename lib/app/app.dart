@@ -19,6 +19,7 @@ import '../screens/profile/refer_and_earn_screen.dart';
 import '../screens/profile/reviews_screen.dart';
 import '../screens/requests/borrow_confirmation_screen.dart';
 import '../screens/requests/requests_screen.dart';
+import '../screens/settings/about_developer_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/shell/main_shell.dart';
 import '../screens/splash/splash_screen.dart';
@@ -133,6 +134,9 @@ class _SaamaGoAppState extends State<SaamaGoApp> {
         break;
       case AppRoutes.help:
         page = const HelpSupportScreen();
+        break;
+      case AppRoutes.aboutDeveloper:
+        page = const AboutDeveloperScreen();
         break;
       default:
         page = const MainShell();

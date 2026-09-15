@@ -19,4 +19,5 @@ abstract final class AppRoutes {
   static const reviews = '/reviews';
   static const refer = '/refer';
   static const help = '/help';
+  static const aboutDeveloper = '/about-developer';
 }

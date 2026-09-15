@@ -104,6 +104,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     label: 'About SAAMAgo',
                     onTap: _mock,
                   ),
+                  _SettingsTile(
+                    icon: Icons.person_pin_rounded,
+                    label: 'About the Developer',
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.aboutDeveloper),
+                  ),
                 ],
               ),
             ),
