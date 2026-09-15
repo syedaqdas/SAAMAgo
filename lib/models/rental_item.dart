@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RentalItem {
   const RentalItem({
@@ -18,6 +19,9 @@ class RentalItem {
     required this.gradient,
     this.isFavourite = false,
     this.imagePath,
+    this.ownerId = '',
+    this.createdAt,
+    this.updatedAt,
   });
 
   final String id;
@@ -36,6 +40,11 @@ class RentalItem {
   final List<Color> gradient;
   final bool isFavourite;
   final String? imagePath;
+  final String ownerId;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  bool get isAvailable => availability.toLowerCase() != 'unavailable';
 
   RentalItem copyWith({
     String? id,
@@ -54,6 +63,9 @@ class RentalItem {
     List<Color>? gradient,
     bool? isFavourite,
     String? imagePath,
+    String? ownerId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return RentalItem(
       id: id ?? this.id,
@@ -72,6 +84,9 @@ class RentalItem {
       gradient: gradient ?? this.gradient,
       isFavourite: isFavourite ?? this.isFavourite,
       imagePath: imagePath ?? this.imagePath,
+      ownerId: ownerId ?? this.ownerId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -93,6 +108,7 @@ class RentalItem {
       'gradient': gradient.map((c) => c.toARGB32()).toList(),
       'isFavourite': isFavourite,
       'imagePath': imagePath,
+      'ownerId': ownerId,
     };
   }
 
@@ -114,6 +130,60 @@ class RentalItem {
       gradient: (json['gradient'] as List).map((c) => Color(c as int)).toList(),
       isFavourite: json['isFavourite'] as bool? ?? false,
       imagePath: json['imagePath'] as String?,
+      ownerId: json['ownerId'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'id': id,
+      'ownerId': ownerId,
+      'ownerName': ownerName,
+      'title': name,
+      'description': description,
+      'category': category,
+      'condition': condition,
+      'pricePerDay': pricePerDay,
+      'location': distanceKm.toString(),
+      'imageUrl': imagePath,
+      'isAvailable': isAvailable,
+      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
+      'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : FieldValue.serverTimestamp(),
+      
+      'distanceKm': distanceKm,
+      'rating': rating,
+      'deposit': deposit,
+      'availability': availability,
+      'ownerTrustScore': ownerTrustScore,
+      'icon': icon.codePoint,
+      'gradient': gradient.map((c) => c.toARGB32()).toList(),
+    };
+  }
+
+  factory RentalItem.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    return RentalItem(
+      id: doc.id,
+      ownerId: data['ownerId'] as String? ?? '',
+      ownerName: data['ownerName'] as String? ?? 'User',
+      name: data['title'] as String? ?? data['name'] as String? ?? 'Item',
+      description: data['description'] as String? ?? '',
+      category: data['category'] as String? ?? 'Other',
+      condition: data['condition'] as String? ?? 'Used',
+      pricePerDay: (data['pricePerDay'] as num?)?.toInt() ?? 0,
+      imagePath: data['imageUrl'] as String?,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      
+      distanceKm: (data['distanceKm'] as num?)?.toDouble() ?? 2.0,
+      rating: (data['rating'] as num?)?.toDouble() ?? 5.0,
+      deposit: (data['deposit'] as num?)?.toInt() ?? 0,
+      availability: data['isAvailable'] == false ? 'Unavailable' : (data['availability'] as String? ?? 'Today'),
+      ownerTrustScore: (data['ownerTrustScore'] as num?)?.toInt() ?? 100,
+      icon: data['icon'] != null ? IconData(data['icon'] as int, fontFamily: 'MaterialIcons') : Icons.inventory_2_rounded,
+      gradient: data['gradient'] != null 
+          ? (data['gradient'] as List).map((c) => Color(c as int)).toList() 
+          : const [Color(0xFFA78BFA), Color(0xFF312E81)],
     );
   }
 }

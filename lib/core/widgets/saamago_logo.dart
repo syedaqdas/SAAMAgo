@@ -28,7 +28,7 @@ class SaamaGoLogo extends StatelessWidget {
         border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryPurple.withValues(alpha: 0.26),
+            color: AppColors.primaryBlue.withValues(alpha: 0.26),
             blurRadius: 32,
             offset: const Offset(0, 16),
           ),
@@ -45,7 +45,7 @@ class _SaamaMarkPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final shader = AppColors.purpleGradient.createShader(Offset.zero & size);
+    final shader = AppColors.brandGradient.createShader(Offset.zero & size);
     final stroke = Paint()
       ..shader = shader
       ..style = PaintingStyle.stroke

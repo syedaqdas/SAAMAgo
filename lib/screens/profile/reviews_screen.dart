@@ -148,7 +148,7 @@ class ReviewsScreen extends StatelessWidget {
                       max: 5,
                       divisions: 8,
                       label: rating.toStringAsFixed(1),
-                      activeColor: AppColors.primaryPurple,
+                      activeColor: AppColors.primaryBlue,
                       onChanged: (value) => setSheetState(() => rating = value),
                     ),
                     TextField(
@@ -204,7 +204,7 @@ class _RatingBar extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: value,
                 minHeight: 7,
-                color: AppColors.primaryPurple,
+                color: AppColors.primaryBlue,
                 backgroundColor: AppColors.border,
               ),
             ),

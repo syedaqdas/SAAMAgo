@@ -27,13 +27,13 @@ class PrimaryButton extends StatelessWidget {
       width: double.infinity,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: enabled ? AppColors.purpleGradient : null,
+          gradient: enabled ? AppColors.brandGradient : null,
           color: enabled ? null : AppColors.elevatedCard,
           borderRadius: BorderRadius.circular(16),
           boxShadow: enabled
               ? [
                   BoxShadow(
-                    color: AppColors.primaryPurple.withValues(alpha: 0.28),
+                    color: AppColors.primaryBlue.withValues(alpha: 0.28),
                     blurRadius: 24,
                     offset: const Offset(0, 12),
                   ),

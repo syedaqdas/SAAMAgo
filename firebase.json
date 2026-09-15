@@ -1,1 +1,27 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"saamago-87811","appId":"1:201171914745:android:4305f9bda2c6a1375db728","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"saamago-87811","configurations":{"android":"1:201171914745:android:4305f9bda2c6a1375db728"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "saamago-87811",
+          "appId": "1:201171914745:android:4305f9bda2c6a1375db728",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "saamago-87811",
+          "configurations": {
+            "android": "1:201171914745:android:4305f9bda2c6a1375db728"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}

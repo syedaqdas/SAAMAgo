@@ -31,11 +31,11 @@ class EmptyState extends StatelessWidget {
               width: 122,
               height: 122,
               decoration: BoxDecoration(
-                gradient: AppColors.purpleGradient,
+                gradient: AppColors.brandGradient,
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primaryPurple.withValues(alpha: 0.25),
+                    color: AppColors.primaryBlue.withValues(alpha: 0.25),
                     blurRadius: 28,
                     offset: const Offset(0, 16),
                   ),

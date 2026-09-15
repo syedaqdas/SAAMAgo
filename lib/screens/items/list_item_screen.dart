@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/storage_service.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +11,7 @@ import '../../core/utils/validators.dart';
 import '../../core/widgets/app_panel.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/primary_button.dart';
+import '../../core/widgets/section_header.dart';
 import '../../data/app_state.dart';
 
 class ListItemScreen extends StatefulWidget {
@@ -70,32 +73,75 @@ class _ListItemScreenState extends State<ListItemScreen> {
       return;
     }
     setState(() => _isLoading = true);
-    await Future<void>.delayed(const Duration(milliseconds: 750));
+    
+    String? finalImagePath = _imagePath;
+    try {
+      if (_imagePath != null && FirebaseAuth.instance.currentUser != null) {
+        final uploadedUrl = await StorageService().uploadListingImage(_imagePath!);
+        if (uploadedUrl != null && uploadedUrl.isNotEmpty) {
+          finalImagePath = uploadedUrl;
+        } else {
+          throw Exception('Failed to upload image.');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        String message = 'Please check your connection and try again.';
+        if (e.toString().contains('exceeds')) {
+          message = 'Image size exceeds 10MB limit.';
+        } else if (e.toString().contains('permission-denied')) {
+          message = 'Permission denied.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image upload failed: $message'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
     if (!mounted) {
       return;
     }
-    AppStateScope.of(context).publishItem(
-      name: _nameController.text.trim(),
-      category: _category,
-      description: _descriptionController.text.trim(),
-      price: int.parse(_priceController.text.trim()),
-      deposit: int.parse(_depositController.text.trim()),
-      condition: _condition,
-      availability: _availability,
-      delivery: _delivery,
-      imagePath: _imagePath,
-    );
-    setState(() => _isLoading = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Item published and added to Explore.')),
-    );
-    _formKey.currentState!.reset();
-    _nameController.clear();
-    _descriptionController.clear();
-    _priceController.clear();
-    _depositController.clear();
-    _locationController.clear();
-    setState(() => _imagePath = null);
+    try {
+      await AppStateScope.of(context).publishItem(
+        name: _nameController.text.trim(),
+        category: _category,
+        description: _descriptionController.text.trim(),
+        price: int.parse(_priceController.text.trim()),
+        deposit: int.parse(_depositController.text.trim()),
+        condition: _condition,
+        availability: _availability,
+        delivery: _delivery,
+        imagePath: finalImagePath,
+      );
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Item published and added to Explore.')),
+      );
+      _formKey.currentState!.reset();
+      _nameController.clear();
+      _descriptionController.clear();
+      _priceController.clear();
+      _depositController.clear();
+      _locationController.clear();
+      setState(() => _imagePath = null);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to publish item: '),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   @override
@@ -117,7 +163,9 @@ class _ListItemScreenState extends State<ListItemScreen> {
                 'List Your Item',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
               ),
-            if (!widget.showAppBar) const SizedBox(height: 18),
+
+            const SectionHeader(title: '1. Photos'),
+            const SizedBox(height: 12),
             SizedBox(
               height: 92,
               child: ListView.separated(
@@ -166,7 +214,7 @@ class _ListItemScreenState extends State<ListItemScreen> {
                             ? Icons.add_photo_alternate_rounded
                             : Icons.inventory_2_rounded,
                         color: isAdd
-                            ? AppColors.lightPurple
+                            ? AppColors.primaryTeal
                             : AppColors.secondaryText,
                       ),
                     ),
@@ -174,7 +222,10 @@ class _ListItemScreenState extends State<ListItemScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 18),
+
+            const SizedBox(height: 24),
+            const SectionHeader(title: '2. Item Information'),
+            const SizedBox(height: 12),
             AppPanel(
               child: Column(
                 children: [
@@ -186,9 +237,26 @@ class _ListItemScreenState extends State<ListItemScreen> {
                         Validators.requiredText(value, 'Item name'),
                   ),
                   const SizedBox(height: 14),
+                  AppTextField(
+                    controller: _descriptionController,
+                    label: 'Description',
+                    icon: Icons.notes_rounded,
+                    maxLines: 3,
+                    validator: (value) =>
+                        Validators.requiredText(value, 'Description'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            const SectionHeader(title: '3. Category & Condition'),
+            const SizedBox(height: 12),
+            AppPanel(
+              child: Column(
+                children: [
                   DropdownButtonFormField<String>(
                     initialValue: _category,
-                    decoration: const InputDecoration(labelText: 'Category'),
+                    decoration: const InputDecoration(labelText: 'Category', prefixIcon: Icon(Icons.category_rounded)),
                     items: store.categories
                         .where((category) => category != 'All')
                         .map((category) {
@@ -202,51 +270,11 @@ class _ListItemScreenState extends State<ListItemScreen> {
                         setState(() => _category = value ?? _category),
                   ),
                   const SizedBox(height: 14),
-                  AppTextField(
-                    controller: _descriptionController,
-                    label: 'Description',
-                    icon: Icons.notes_rounded,
-                    maxLines: 3,
-                    validator: (value) =>
-                        Validators.requiredText(value, 'Description'),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          controller: _priceController,
-                          label: 'Price per day',
-                          icon: Icons.currency_rupee_rounded,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          validator: (value) =>
-                              Validators.amount(value, 'Price'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: AppTextField(
-                          controller: _depositController,
-                          label: 'Deposit',
-                          icon: Icons.lock_rounded,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          validator: (value) =>
-                              Validators.amount(value, 'Deposit'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
                     initialValue: _condition,
                     decoration: const InputDecoration(
                       labelText: 'Item condition',
+                      prefixIcon: Icon(Icons.star_half_rounded),
                     ),
                     items: const [
                       DropdownMenuItem(
@@ -262,7 +290,51 @@ class _ListItemScreenState extends State<ListItemScreen> {
                     onChanged: (value) =>
                         setState(() => _condition = value ?? _condition),
                   ),
-                  const SizedBox(height: 14),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            const SectionHeader(title: '4. Pricing'),
+            const SizedBox(height: 12),
+            AppPanel(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AppTextField(
+                      controller: _priceController,
+                      label: 'Price / day',
+                      icon: Icons.currency_rupee_rounded,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      validator: (value) =>
+                          Validators.amount(value, 'Price'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppTextField(
+                      controller: _depositController,
+                      label: 'Deposit',
+                      icon: Icons.lock_rounded,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      validator: (value) =>
+                          Validators.amount(value, 'Deposit'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            const SectionHeader(title: '5. Location & Availability'),
+            const SizedBox(height: 12),
+            AppPanel(
+              child: Column(
+                children: [
                   AppTextField(
                     controller: _locationController,
                     label: 'Pickup location',
@@ -275,6 +347,7 @@ class _ListItemScreenState extends State<ListItemScreen> {
                     initialValue: _availability,
                     decoration: const InputDecoration(
                       labelText: 'Availability',
+                      prefixIcon: Icon(Icons.calendar_today_rounded),
                     ),
                     items: const [
                       DropdownMenuItem(value: 'Today', child: Text('Today')),
@@ -293,15 +366,15 @@ class _ListItemScreenState extends State<ListItemScreen> {
                   const SizedBox(height: 8),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    activeThumbColor: AppColors.primaryPurple,
-                    title: const Text('Offer delivery option'),
+                    activeThumbColor: AppColors.primaryTeal,
+                    title: const Text('Offer delivery option', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                     value: _delivery,
                     onChanged: (value) => setState(() => _delivery = value),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 28),
             PrimaryButton(
               label: 'Publish Item',
               icon: Icons.publish_rounded,

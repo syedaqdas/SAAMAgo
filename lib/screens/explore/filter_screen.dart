@@ -66,7 +66,7 @@ class _FilterScreenState extends State<FilterScreen> {
                     label: Text(category),
                     selected: _category == category,
                     onSelected: (_) => setState(() => _category = category),
-                    selectedColor: AppColors.primaryPurple,
+                    selectedColor: AppColors.primaryBlue,
                     backgroundColor: AppColors.chip,
                     side: const BorderSide(color: AppColors.border),
                   ),
@@ -116,7 +116,7 @@ class _FilterScreenState extends State<FilterScreen> {
             const SizedBox(height: 14),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              activeThumbColor: AppColors.primaryPurple,
+              activeThumbColor: AppColors.primaryBlue,
               title: const Text('Available today'),
               value: _available,
               onChanged: (value) => setState(() => _available = value),
@@ -136,7 +136,7 @@ class _FilterScreenState extends State<FilterScreen> {
                       ? Icons.radio_button_checked_rounded
                       : Icons.radio_button_unchecked_rounded,
                   color: _sort == option
-                      ? AppColors.primaryPurple
+                      ? AppColors.primaryBlue
                       : AppColors.secondaryText,
                 ),
                 onTap: () => setState(() => _sort = option),
@@ -228,7 +228,7 @@ class _SliderBlock extends StatelessWidget {
           min: min,
           max: max,
           divisions: divisions,
-          activeColor: AppColors.primaryPurple,
+          activeColor: AppColors.primaryBlue,
           inactiveColor: AppColors.border,
           onChanged: onChanged,
         ),

@@ -122,7 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     height: 8,
                     decoration: BoxDecoration(
                       color: _page == index
-                          ? AppColors.primaryPurple
+                          ? AppColors.primaryBlue
                           : AppColors.border,
                       borderRadius: BorderRadius.circular(99),
                     ),
@@ -161,9 +161,9 @@ class _OnboardingIllustration extends StatelessWidget {
             height: 230,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primaryPurple.withValues(alpha: 0.12),
+              color: AppColors.primaryBlue.withValues(alpha: 0.12),
               border: Border.all(
-                color: AppColors.primaryPurple.withValues(alpha: 0.24),
+                color: AppColors.primaryBlue.withValues(alpha: 0.24),
               ),
             ),
           ),
@@ -172,7 +172,7 @@ class _OnboardingIllustration extends StatelessWidget {
             right: 38,
             child: Icon(
               Icons.auto_awesome_rounded,
-              color: AppColors.lightPurple.withValues(alpha: 0.7),
+              color: AppColors.primaryTeal.withValues(alpha: 0.7),
             ),
           ),
           Positioned(
@@ -181,18 +181,18 @@ class _OnboardingIllustration extends StatelessWidget {
             child: Icon(
               Icons.circle,
               size: 12,
-              color: AppColors.primaryPurple.withValues(alpha: 0.8),
+              color: AppColors.primaryBlue.withValues(alpha: 0.8),
             ),
           ),
           Container(
             width: 148,
             height: 148,
             decoration: BoxDecoration(
-              gradient: AppColors.purpleGradient,
+              gradient: AppColors.brandGradient,
               borderRadius: BorderRadius.circular(42),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryPurple.withValues(alpha: 0.3),
+                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
                   blurRadius: 36,
                   offset: const Offset(0, 22),
                 ),

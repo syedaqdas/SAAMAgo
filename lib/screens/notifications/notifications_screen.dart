@@ -47,7 +47,7 @@ class NotificationsScreen extends StatelessWidget {
                       border: Border.all(
                         color: notification.isRead
                             ? AppColors.border
-                            : AppColors.primaryPurple.withValues(alpha: 0.4),
+                            : AppColors.primaryBlue.withValues(alpha: 0.4),
                       ),
                     ),
                     child: Row(
@@ -85,7 +85,7 @@ class NotificationsScreen extends StatelessWidget {
                                       width: 8,
                                       height: 8,
                                       decoration: const BoxDecoration(
-                                        color: AppColors.primaryPurple,
+                                        color: AppColors.primaryBlue,
                                         shape: BoxShape.circle,
                                       ),
                                     ),

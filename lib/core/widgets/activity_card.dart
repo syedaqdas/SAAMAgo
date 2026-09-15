@@ -39,10 +39,10 @@ class ActivityCard extends StatelessWidget {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: AppColors.primaryPurple.withValues(alpha: 0.14),
+                color: AppColors.primaryBlue.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: AppColors.lightPurple),
+              child: Icon(icon, color: AppColors.primaryTeal),
             ),
             const SizedBox(width: 12),
             Expanded(

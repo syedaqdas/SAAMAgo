@@ -7,7 +7,7 @@ import '../models/rental_item.dart';
 import '../models/rental_request.dart';
 import '../models/review_item.dart';
 import '../models/transaction_item.dart';
-import '../models/user_profile.dart';
+
 
 abstract final class MockData {
   static const categories = [
@@ -22,15 +22,7 @@ abstract final class MockData {
     'Music',
   ];
 
-  static final profile = UserProfile(
-    name: 'Aqdas Imam',
-    handle: '@aqdasimam',
-    rating: 4.9,
-    trustScore: 98,
-    itemsListed: 12,
-    itemsBorrowed: 28,
-    itemsLent: 18,
-  );
+  
 
   static final items = <RentalItem>[
     RentalItem(

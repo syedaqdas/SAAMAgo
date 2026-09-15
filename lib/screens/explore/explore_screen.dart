@@ -97,7 +97,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           label: Text(category),
                           selected: selected,
                           onSelected: (_) => store.setCategory(category),
-                          selectedColor: AppColors.primaryPurple,
+                          selectedColor: AppColors.primaryBlue,
                           backgroundColor: AppColors.chip,
                           labelStyle: TextStyle(
                             color: selected
@@ -107,7 +107,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           ),
                           side: BorderSide(
                             color: selected
-                                ? AppColors.primaryPurple
+                                ? AppColors.primaryBlue
                                 : AppColors.border,
                           ),
                         );
@@ -143,7 +143,25 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
             ),
           ),
-          if (items.isEmpty)
+          if (store.isListingsLoading && items.isEmpty)
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (store.listingsError != null && items.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: EmptyState(
+                icon: Icons.wifi_off_rounded,
+                title: 'Unable to load items',
+                message: store.listingsError!,
+                actionLabel: 'Try Again',
+                onAction: store.fetchListings,
+              ),
+            )
+          else if (items.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
               child: EmptyState(
@@ -152,6 +170,34 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 message: 'Try adjusting your search or filters.',
                 actionLabel: 'Reset Filters',
                 onAction: store.resetFilters,
+              ),
+            )
+          else if (store.listingsError != null)
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.wifi_off_rounded, size: 16, color: AppColors.error),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        store.listingsError!,
+                        style: const TextStyle(fontSize: 12, color: AppColors.error, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: store.fetchListings,
+                      child: const Text('Retry', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                  ],
+                ),
               ),
             )
           else if (store.showGrid)
@@ -163,7 +209,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 14,
                   mainAxisSpacing: 14,
-                  childAspectRatio: 0.58,
+                  childAspectRatio: 0.52,
                 ),
                 itemBuilder: (context, index) => ItemCard(item: items[index]),
               ),
@@ -177,7 +223,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     const SizedBox(height: 14),
                 itemBuilder: (context, index) {
                   return SizedBox(
-                    height: 246,
+                    height: 290,
                     child: ItemCard(item: items[index]),
                   );
                 },
@@ -221,7 +267,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           ? Icons.radio_button_checked_rounded
                           : Icons.radio_button_unchecked_rounded,
                       color: store.sortOption == option
-                          ? AppColors.primaryPurple
+                          ? AppColors.primaryBlue
                           : AppColors.secondaryText,
                     ),
                     onTap: () {
@@ -274,7 +320,7 @@ class _ActionPill extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18, color: AppColors.lightPurple),
+              Icon(icon, size: 18, color: AppColors.primaryTeal),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(

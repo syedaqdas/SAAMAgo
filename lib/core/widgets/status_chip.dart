@@ -20,6 +20,10 @@ class StatusChip extends StatelessWidget {
         label: 'Completed',
         color: AppColors.success,
       ),
+      RequestStatus.rejected => const StatusChip(
+        label: 'Rejected',
+        color: AppColors.error,
+      ),
       RequestStatus.cancelled => const StatusChip(
         label: 'Cancelled',
         color: AppColors.error,

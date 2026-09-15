@@ -52,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     title: const Text('Notifications'),
                     value: _notifications,
-                    activeThumbColor: AppColors.primaryPurple,
+                    activeThumbColor: AppColors.primaryBlue,
                     onChanged: (value) =>
                         setState(() => _notifications = value),
                   ),
@@ -69,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     title: const Text('Dark Mode'),
                     value: _darkMode,
-                    activeThumbColor: AppColors.primaryPurple,
+                    activeThumbColor: AppColors.primaryBlue,
                     onChanged: (value) {
                       setState(() => _darkMode = true);
                       ScaffoldMessenger.of(context).showSnackBar(

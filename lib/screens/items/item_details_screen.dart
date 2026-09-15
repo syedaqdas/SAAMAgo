@@ -93,7 +93,7 @@ class ItemDetailsScreen extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   decoration: BoxDecoration(
                     color: index == 0
-                        ? AppColors.primaryPurple
+                        ? AppColors.primaryBlue
                         : AppColors.border,
                     borderRadius: BorderRadius.circular(99),
                   ),
@@ -269,7 +269,7 @@ class _InfoPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: AppColors.lightPurple),
+            Icon(icon, size: 14, color: AppColors.primaryTeal),
             const SizedBox(width: 5),
             Flexible(
               child: Text(

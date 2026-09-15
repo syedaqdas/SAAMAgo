@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
 
     return SafeArea(
       child: RefreshIndicator(
-        color: AppColors.primaryPurple,
+        color: AppColors.primaryBlue,
         onRefresh: _refresh,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 112),
@@ -81,7 +81,7 @@ class HomeScreen extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryPurple,
+                            color: AppColors.primaryTeal,
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
@@ -97,70 +97,156 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 22),
-            AppPanel(
-              gradient: AppColors.purpleGradient,
-              onTap: () => Navigator.pushNamed(context, AppRoutes.wallet),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'SAAMAgo Wallet',
-                          style: TextStyle(fontWeight: FontWeight.w800),
-                        ),
+            const SizedBox(height: 28),
+            const Text(
+              'What do you want\ntoday?',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                height: 1.15,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.shell, arguments: 1), // Explore tab
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.brandGradient,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryBlue.withValues(alpha: 0.25),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                      Container(
-                        width: 58,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(Icons.account_balance_wallet_rounded),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.search_rounded, color: Colors.white, size: 28),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Borrow',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Find items nearby',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '₹${store.walletBalance}',
-                    style: const TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Available balance',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      _WalletAction(
-                        icon: Icons.add_rounded,
-                        label: 'Add Money',
-                        onTap: () =>
-                            Navigator.pushNamed(context, AppRoutes.wallet),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.listItem),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardSurface,
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const SizedBox(width: 10),
-                      _WalletAction(
-                        icon: Icons.history_rounded,
-                        label: 'History',
-                        onTap: () =>
-                            Navigator.pushNamed(context, AppRoutes.wallet),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.elevatedCard,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primaryTeal, size: 28),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Lend',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'List an item to earn',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.secondaryText,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 28),
+            AppPanel(
+              padding: const EdgeInsets.all(16),
+              onTap: () => Navigator.pushNamed(context, AppRoutes.wallet),
+              child: Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: AppColors.elevatedCard,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primaryBlue),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'SAAMAgo Wallet',
+                          style: TextStyle(color: AppColors.secondaryText, fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '₹${store.walletBalance}',
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right_rounded, color: AppColors.secondaryText),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            const SectionHeader(title: 'Your Activity'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 28),
+            const SectionHeader(title: 'Your Dashboard'),
+            const SizedBox(height: 14),
             Row(
               children: const [
                 Expanded(
@@ -195,9 +281,58 @@ class HomeScreen extends StatelessWidget {
               onAction: () => Navigator.pushNamed(context, AppRoutes.requests),
             ),
             const SizedBox(height: 12),
-            ...store.requests.take(4).map((request) {
-              Color statusColor;
-              String statusText;
+            if (store.isRequestsLoading && store.requests.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (store.requestsError != null && store.requests.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Text(store.requestsError!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.error, fontSize: 13)),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: store.fetchRequests,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else if (store.requests.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(
+                  child: Text('No recent activity', style: TextStyle(color: AppColors.secondaryText)),
+                ),
+              ),
+            if (store.requestsError != null && store.requests.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.wifi_off_rounded, size: 14, color: AppColors.error),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        store.requestsError!,
+                        style: const TextStyle(fontSize: 12, color: AppColors.error),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: store.fetchRequests,
+                      child: const Text('Retry', style: TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ),
+            if (store.requests.isNotEmpty)
+              ...store.requests.take(4).map((request) {
+                Color statusColor;
+                String statusText;
               String subtitleText = 'Due on ${request.dateLabel}';
               
               switch (request.status) {
@@ -219,6 +354,11 @@ class HomeScreen extends StatelessWidget {
                   statusColor = AppColors.error;
                   statusText = 'Cancelled';
                   subtitleText = 'Request cancelled';
+                  break;
+                case RequestStatus.rejected:
+                  statusColor = AppColors.error;
+                  statusText = 'Rejected';
+                  subtitleText = 'Request rejected';
                   break;
               }
               
@@ -246,12 +386,12 @@ class HomeScreen extends StatelessWidget {
                     width: 54,
                     height: 54,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryPurple.withValues(alpha: 0.16),
+                      color: AppColors.primaryBlue.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: const Icon(
                       Icons.card_giftcard_rounded,
-                      color: AppColors.lightPurple,
+                      color: AppColors.primaryTeal,
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -280,7 +420,7 @@ class HomeScreen extends StatelessWidget {
                         Navigator.pushNamed(context, AppRoutes.refer),
                     icon: const Icon(
                       Icons.arrow_forward_rounded,
-                      color: AppColors.lightPurple,
+                      color: AppColors.primaryTeal,
                     ),
                   ),
                 ],
@@ -294,20 +434,82 @@ class HomeScreen extends StatelessWidget {
                   Navigator.pushNamed(context, AppRoutes.shell, arguments: 1),
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              height: 245,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: nearby.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 14),
-                itemBuilder: (context, index) {
-                  return SizedBox(
-                    width: 176,
-                    child: ItemCard(item: nearby[index], compact: true),
-                  );
-                },
+            if (store.isListingsLoading && nearby.isEmpty)
+              const SizedBox(
+                height: 245,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (store.listingsError != null && nearby.isEmpty)
+              SizedBox(
+                height: 245,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        store.listingsError!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: AppColors.error, fontSize: 13),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: store.fetchListings,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else if (nearby.isEmpty)
+              const SizedBox(
+                height: 245,
+                child: Center(
+                  child: Text(
+                    'No items nearby',
+                    style: TextStyle(color: AppColors.secondaryText),
+                  ),
+                ),
+              )
+            else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (store.listingsError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.wifi_off_rounded, size: 14, color: AppColors.error),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              store.listingsError!,
+                              style: const TextStyle(fontSize: 12, color: AppColors.error),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: store.fetchListings,
+                            child: const Text('Retry', style: TextStyle(fontSize: 12)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  SizedBox(
+                    height: 245,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: nearby.length,
+                      separatorBuilder: (context, index) => const SizedBox(width: 14),
+                      itemBuilder: (context, index) {
+                        return SizedBox(
+                          width: 176,
+                          child: ItemCard(item: nearby[index], compact: true),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ),
           ],
         ),
       ),
@@ -315,51 +517,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _WalletAction extends StatelessWidget {
-  const _WalletAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.16),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 18),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  label,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _MetricCard extends StatelessWidget {
   const _MetricCard({
@@ -384,7 +541,7 @@ class _MetricCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.lightPurple, size: 22),
+          Icon(icon, color: AppColors.primaryTeal, size: 22),
           const SizedBox(height: 12),
           Text(
             value,

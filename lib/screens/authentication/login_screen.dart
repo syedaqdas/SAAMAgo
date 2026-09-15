@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../app/routes.dart';
+import '../../data/app_state.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/validators.dart';
 import '../../core/widgets/app_panel.dart';
@@ -38,6 +40,10 @@ class _LoginScreenState extends State<LoginScreen> {
         verificationCompleted: (PhoneAuthCredential credential) async {
           try {
             await FirebaseAuth.instance.signInWithCredential(credential);
+            if (!mounted) return;
+            try {
+              await AppStateScope.of(context).fetchUser();
+            } catch (_) {}
             if (!mounted) return;
             setState(() => _isLoading = false);
             Navigator.pushReplacementNamed(context, AppRoutes.location);
@@ -145,6 +151,38 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: _continue,
                           isLoading: _isLoading,
                         ),
+                        if (kDebugMode) ...[
+                          const SizedBox(height: 16),
+                          const Center(
+                            child: Text(
+                              'Development only',
+                              style: TextStyle(
+                                color: AppColors.warning,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pushReplacementNamed(context, AppRoutes.shell);
+                              },
+                              icon: const Icon(Icons.developer_mode_rounded, color: AppColors.warning),
+                              label: const Text(
+                                'Developer Login (Skip OTP)',
+                                style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w800),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: AppColors.warning.withValues(alpha: 0.5)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 18),
                         Row(
                           children: [

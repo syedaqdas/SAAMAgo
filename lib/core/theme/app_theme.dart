@@ -5,8 +5,8 @@ import '../constants/app_colors.dart';
 abstract final class AppTheme {
   static ThemeData dark() {
     const colorScheme = ColorScheme.dark(
-      primary: AppColors.primaryPurple,
-      secondary: AppColors.lightPurple,
+      primary: AppColors.primaryBlue,
+      secondary: AppColors.primaryTeal,
       surface: AppColors.cardSurface,
       error: AppColors.error,
       onPrimary: AppColors.primaryText,
@@ -61,7 +61,7 @@ abstract final class AppTheme {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(
-            color: AppColors.primaryPurple,
+            color: AppColors.primaryBlue,
             width: 1.5,
           ),
         ),

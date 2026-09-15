@@ -8,6 +8,7 @@ import '../../app/routes.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/app_panel.dart';
+import '../../data/app_state.dart';
 import '../../core/widgets/primary_button.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -69,6 +70,10 @@ class _OtpScreenState extends State<OtpScreen> {
         smsCode: _controller.text,
       );
       await FirebaseAuth.instance.signInWithCredential(credential);
+      if (!mounted) return;
+      try {
+        await AppStateScope.of(context).fetchUser();
+      } catch (_) {}
 
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -135,7 +140,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
                                   color: hasDigit
-                                      ? AppColors.primaryPurple
+                                      ? AppColors.primaryBlue
                                       : AppColors.border,
                                 ),
                               ),
@@ -221,7 +226,7 @@ class _OtpScreenState extends State<OtpScreen> {
                             : 'Resend OTP in 00:${_seconds.toString().padLeft(2, '0')}',
                         style: TextStyle(
                           color: _seconds == 0
-                              ? AppColors.lightPurple
+                              ? AppColors.primaryTeal
                               : AppColors.secondaryText,
                           fontWeight: FontWeight.w800,
                         ),

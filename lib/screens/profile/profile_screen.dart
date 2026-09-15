@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:io';
+import '../../services/storage_service.dart';
 
 import '../../app/routes.dart';
 import '../../core/constants/app_colors.dart';
@@ -6,10 +10,71 @@ import '../../core/widgets/app_panel.dart';
 import '../../core/widgets/status_chip.dart';
 import '../../data/app_state.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, this.showAppBar = false});
-
   final bool showAppBar;
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _isUploading = false;
+  
+
+  Future<void> _pickAndUploadImage() async {
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(source: ImageSource.gallery);
+      if (image == null) return;
+      if (!mounted) return;
+      
+      setState(() {
+        
+        _isUploading = true;
+      });
+      
+      final store = AppStateScope.of(context);
+      
+      String? uploadedUrl;
+      if (FirebaseAuth.instance.currentUser != null) {
+        uploadedUrl = await StorageService().uploadProfileImage(image.path);
+        if (uploadedUrl == null) {
+          throw Exception('Failed to upload profile image.');
+        }
+      }
+      
+      final finalPath = uploadedUrl ?? image.path;
+      await store.updateProfile({'profileImageUrl': finalPath});
+      
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile image updated successfully.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      
+      String message = 'Please check your connection and try again.';
+      if (e.toString().contains('exceeds')) {
+        message = 'Image size exceeds 10MB limit.';
+      } else if (e.toString().contains('permission-denied')) {
+        message = 'Permission denied.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update profile image: $message'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,25 +83,54 @@ class ProfileScreen extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.fromLTRB(
           20,
-          showAppBar ? 8 : 12,
+          widget.showAppBar ? 8 : 12,
           20,
-          showAppBar ? 24 : 112,
+          widget.showAppBar ? 24 : 112,
         ),
         children: [
-          if (!showAppBar)
+          if (!widget.showAppBar)
             const Text(
               'Profile',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
             ),
-          if (!showAppBar) const SizedBox(height: 18),
+          if (!widget.showAppBar) const SizedBox(height: 18),
           Column(
             children: [
-              const CircleAvatar(
-                radius: 44,
-                backgroundColor: AppColors.elevatedCard,
-                child: Text(
-                  'AI',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+              GestureDetector(
+                onTap: _isUploading ? null : _pickAndUploadImage,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 44,
+                      backgroundColor: AppColors.elevatedCard,
+                      backgroundImage: profile.profileImageUrl != null
+                          ? (profile.profileImageUrl!.startsWith('http')
+                              ? NetworkImage(profile.profileImageUrl!) as ImageProvider
+                              : FileImage(File(profile.profileImageUrl!)))
+                          : null,
+                      child: profile.profileImageUrl == null
+                          ? const Text(
+                              'AI',
+                              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+                            )
+                          : null,
+                    ),
+                    if (_isUploading)
+                      const CircularProgressIndicator(color: AppColors.primaryTeal),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryTeal,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 14),
@@ -102,7 +196,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               const Expanded(
-                child: _ProfileStat(label: 'Saved', value: '₹8.2k'),
+                child: _ProfileStat(label: 'Saved', value: '₹18.2k'),
               ),
             ],
           ),
@@ -114,7 +208,7 @@ class ProfileScreen extends StatelessWidget {
                 _ProfileMenuTile(
                   icon: Icons.person_outline_rounded,
                   label: 'Personal Information',
-                  onTap: () => _mock(context),
+                  onTap: () => _editProfile(context),
                 ),
                 _ProfileMenuTile(
                   icon: Icons.inventory_2_outlined,
@@ -163,7 +257,7 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
 
-    if (!showAppBar) {
+    if (!widget.showAppBar) {
       return body;
     }
     return Scaffold(
@@ -172,11 +266,53 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _mock(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profile editing is mocked for this demo.')),
+  Future<void> _editProfile(BuildContext context) async {
+    final store = AppStateScope.of(context);
+    final profile = store.profile;
+    
+    final nameController = TextEditingController(text: profile.displayName);
+    final locationController = TextEditingController(text: profile.location ?? '');
+    
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardSurface,
+        title: const Text('Edit Profile'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: locationController,
+              decoration: const InputDecoration(labelText: 'Location'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await store.updateProfile({
+                'displayName': nameController.text.trim(),
+                'location': locationController.text.trim(),
+              });
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
     );
   }
+
+
 }
 
 class _ProfileStat extends StatelessWidget {

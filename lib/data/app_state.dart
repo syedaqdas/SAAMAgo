@@ -1,24 +1,35 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/chat_message.dart';
+import '../models/chat_model.dart';
 import '../models/notification_item.dart';
 import '../models/rental_item.dart';
 import '../models/rental_request.dart';
 import '../models/review_item.dart';
 import '../models/transaction_item.dart';
-import '../models/user_profile.dart';
+import '../models/user_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/user_service.dart';
+import '../services/listing_service.dart';
+import '../services/borrow_request_service.dart';
+import '../services/chat_service.dart';
 import 'mock_data.dart';
 
 class SaamaGoStore extends ChangeNotifier {
+  final _userService = UserService();
+  final _listingService = ListingService();
+  final _borrowRequestService = BorrowRequestService();
+  final _chatService = ChatService();
   SaamaGoStore()
     : _items = List<RentalItem>.from(MockData.items),
       _notifications = List<NotificationItem>.from(MockData.notifications),
       _transactions = List<TransactionItem>.from(MockData.transactions),
       _messages = List<ChatMessage>.from(MockData.messages),
       _reviews = List<ReviewItem>.from(MockData.reviews) {
-    _requests = MockData.requests(_items);
+    _requests.addAll(MockData.requests(_items));
     _loadPersistedData();
   }
 
@@ -73,11 +84,200 @@ class SaamaGoStore extends ChangeNotifier {
   int _walletBalance = 2589;
   int get walletBalance => _walletBalance;
 
-  final UserProfile profile = MockData.profile;
+  UserModel _profile = UserModel(
+    uid: 'mock_uid',
+    phoneNumber: '+919876543210',
+    displayName: 'SAAMAgo User',
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+  );
+
+  UserModel get profile => _profile;
+
+  Future<void> fetchUser() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      try {
+        var p = await _userService.getUserProfile(currentUser.uid);
+        if (p == null) {
+          await _userService.createUserProfile(
+            uid: currentUser.uid,
+            phoneNumber: currentUser.phoneNumber ?? '',
+          );
+        } else {
+          _profile = p;
+          notifyListeners();
+        }
+      } catch (_) {
+        // Retain local/cached profile during offline launch
+      }
+
+      _profileSubscription?.cancel();
+      _profileSubscription = _userService.getUserProfileStream(currentUser.uid).listen(
+        (userModel) {
+          if (userModel != null) {
+            _profile = userModel;
+            notifyListeners();
+          }
+        },
+        onError: (_) {
+          // Gracefully retain current profile during connection drop
+        },
+      );
+
+      _chatsSubscription?.cancel();
+      isChatsLoading = true;
+      _chatsSubscription = _chatService.getUserChatsStream(currentUser.uid).listen(
+        (firestoreChats) {
+          _chats.clear();
+          _chats.addAll(firestoreChats);
+          isChatsLoading = false;
+          chatsError = null;
+          notifyListeners();
+        },
+        onError: (error) {
+          isChatsLoading = false;
+          chatsError = _parseError(error);
+          notifyListeners();
+        },
+      );
+
+      await fetchListings();
+      await fetchRequests();
+    }
+  }
+
+  Future<void> fetchRequests() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    _requestsSubscription?.cancel();
+    isRequestsLoading = true;
+    requestsError = null;
+    notifyListeners();
+
+    _requestsSubscription = _borrowRequestService.getRequestsForUserStream(currentUser.uid).listen(
+      (firestoreRequests) {
+        _requests.clear();
+        _requests.addAll(firestoreRequests);
+        isRequestsLoading = false;
+        requestsError = null;
+        notifyListeners();
+      },
+      onError: (error) {
+        isRequestsLoading = false;
+        requestsError = _parseError(error);
+        notifyListeners();
+      },
+    );
+  }
+
+  Future<void> updateRequestStatus(String id, RequestStatus status) async {
+    final index = _requests.indexWhere((req) => req.id == id);
+    if (index == -1) return;
+
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final previousStatus = _requests[index].status;
+    _requests[index] = _requests[index].copyWith(status: status);
+    notifyListeners();
+
+    if (currentUid != null) {
+      try {
+        await _borrowRequestService.updateRequestStatus(id, status);
+      } catch (e) {
+        // Rollback optimistic update on network failure
+        _requests[index] = _requests[index].copyWith(status: previousStatus);
+        notifyListeners();
+        throw Exception(_parseError(e));
+      }
+    } else {
+      _savePersistedRequests();
+    }
+  }
+
+  String _parseError(Object error) {
+    final str = error.toString().toLowerCase();
+    if (str.contains('unavailable') || str.contains('network') || str.contains('offline')) {
+      return 'Network connection lost. Please check your internet connection.';
+    }
+    if (str.contains('permission-denied')) {
+      return 'You do not have permission to access this data.';
+    }
+    return 'An unexpected error occurred. Please try again.';
+  }
+
+  Future<void> fetchListings() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return;
+    }
+    
+    _listingsSubscription?.cancel();
+    isListingsLoading = true;
+    listingsError = null;
+    notifyListeners();
+
+    _listingsSubscription = _listingService.getListingsStream().listen(
+      (firestoreListings) {
+        _items.clear();
+        _items.addAll(firestoreListings);
+        isListingsLoading = false;
+        listingsError = null;
+        notifyListeners();
+      },
+      onError: (error) {
+        isListingsLoading = false;
+        listingsError = _parseError(error);
+        notifyListeners();
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _listingsSubscription?.cancel();
+    _requestsSubscription?.cancel();
+    _profileSubscription?.cancel();
+    _chatsSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> updateProfile(Map<String, dynamic> data) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      try {
+        await _userService.updateUserProfile(currentUser.uid, data);
+      } catch (e) {
+        throw Exception(_parseError(e));
+      }
+    } else {
+      // Developer Login Mock behavior:
+      _profile = _profile.copyWith(
+        displayName: data['displayName'] as String?,
+        location: data['location'] as String?,
+        profileImageUrl: data['profileImageUrl'] as String?,
+      );
+      notifyListeners();
+    }
+  }
+  StreamSubscription<UserModel?>? _profileSubscription;
   final List<RentalItem> _items;
-  late final List<RentalRequest> _requests;
+  StreamSubscription<List<RentalItem>>? _listingsSubscription;
+  bool isListingsLoading = false;
+  String? listingsError;
+
+  final List<RentalRequest> _requests = [];
+  StreamSubscription<List<RentalRequest>>? _requestsSubscription;
+  bool isRequestsLoading = false;
+  String? requestsError;
   final List<NotificationItem> _notifications;
   final List<TransactionItem> _transactions;
+  final List<ChatModel> _chats = [];
+  StreamSubscription<List<ChatModel>>? _chatsSubscription;
+  bool isChatsLoading = false;
+  String? chatsError;
+  List<ChatModel> get chats => List.unmodifiable(_chats);
+
   final List<ChatMessage> _messages;
   final List<ReviewItem> _reviews;
 
@@ -210,24 +410,57 @@ class SaamaGoStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addBorrowRequest(RentalItem item, int durationDays, int amount) {
-    _requests.insert(
-      0,
-      RentalRequest(
-        id: 'req-${DateTime.now().millisecondsSinceEpoch}',
-        item: item,
-        durationDays: durationDays,
-        amount: amount,
-        personName: item.ownerName,
-        status: RequestStatus.pending,
-        dateLabel: 'Today',
-      ),
+  Future<void> addBorrowRequest(RentalItem item, int durationDays, int amount, {String? message}) async {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid != null) {
+      if (currentUid == item.ownerId) {
+        throw Exception('You cannot request your own item.');
+      }
+      final activeDuplicate = _requests.any((req) =>
+          req.listingId == item.id &&
+          req.borrowerId == currentUid &&
+          (req.status == RequestStatus.pending || req.status == RequestStatus.accepted));
+      if (activeDuplicate) {
+        throw Exception('You already have an active request for this item.');
+      }
+    }
+
+    final newRequest = RentalRequest(
+      id: 'req-',
+      item: item,
+      durationDays: durationDays,
+      amount: amount,
+      personName: item.ownerName,
+      status: RequestStatus.pending,
+      dateLabel: 'Today',
+      listingId: item.id,
+      listingTitle: item.name,
+      borrowerId: currentUid ?? '',
+      borrowerName: profile.name,
+      ownerId: item.ownerId,
+      ownerName: item.ownerName,
+      message: message,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
-    _savePersistedRequests();
-    notifyListeners();
+
+    RentalRequest addedRequest = newRequest;
+    if (currentUid != null) {
+      try {
+        addedRequest = await _borrowRequestService.createRequest(newRequest);
+      } catch (e) {
+        throw Exception(_parseError(e));
+      }
+    }
+
+    if (currentUid == null) {
+      _requests.insert(0, addedRequest);
+      _savePersistedRequests();
+      notifyListeners();
+    }
   }
 
-  void publishItem({
+  Future<void> publishItem({
     required String name,
     required String category,
     required String description,
@@ -237,31 +470,41 @@ class SaamaGoStore extends ChangeNotifier {
     required String availability,
     required bool delivery,
     String? imagePath,
-  }) {
-    _items.insert(
-      0,
-      RentalItem(
-        id: 'item-${DateTime.now().millisecondsSinceEpoch}',
-        name: name,
-        category: category,
-        pricePerDay: price,
-        distanceKm: 0.6,
-        rating: 5,
-        deposit: deposit,
-        condition: condition,
-        availability: availability,
-        description: description,
-        ownerName: profile.name,
-        ownerTrustScore: profile.trustScore,
-        icon: delivery
-            ? Icons.local_shipping_rounded
-            : Icons.inventory_2_rounded,
-        gradient: const [Color(0xFFA78BFA), Color(0xFF312E81)],
-        imagePath: imagePath,
-      ),
+  }) async {
+    final newItem = RentalItem(
+      id: 'item-',
+      name: name,
+      category: category,
+      pricePerDay: price,
+      distanceKm: 0.6,
+      rating: 5,
+      deposit: deposit,
+      condition: condition,
+      availability: availability,
+      description: description,
+      ownerName: profile.name,
+      ownerId: FirebaseAuth.instance.currentUser?.uid ?? '',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      ownerTrustScore: profile.trustScore,
+      icon: delivery
+          ? Icons.local_shipping_rounded
+          : Icons.inventory_2_rounded,
+      gradient: const [Color(0xFFA78BFA), Color(0xFF312E81)],
+      imagePath: imagePath,
     );
-    _savePersistedItems();
-    notifyListeners();
+
+    if (FirebaseAuth.instance.currentUser != null) {
+      try {
+        await _listingService.createListing(newItem);
+      } catch (e) {
+        throw Exception(_parseError(e));
+      }
+    } else {
+      _items.insert(0, newItem);
+      _savePersistedItems();
+      notifyListeners();
+    }
   }
 
   void sendMessage(String text) {

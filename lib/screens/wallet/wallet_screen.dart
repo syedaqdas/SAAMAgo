@@ -31,7 +31,7 @@ class WalletScreen extends StatelessWidget {
             ),
           if (!showAppBar) const SizedBox(height: 18),
           AppPanel(
-            gradient: AppColors.purpleGradient,
+            gradient: AppColors.brandGradient,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -110,10 +110,10 @@ class WalletScreen extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryPurple.withValues(alpha: 0.14),
+                      color: AppColors.primaryBlue.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(transaction.icon, color: AppColors.lightPurple),
+                    child: Icon(transaction.icon, color: AppColors.primaryTeal),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

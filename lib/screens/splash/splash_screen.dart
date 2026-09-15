@@ -5,6 +5,7 @@ import '../../app/routes.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/saamago_logo.dart';
 import '../../core/widgets/saamago_wordmark.dart';
+import '../../data/app_state.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -50,6 +51,10 @@ class _SplashScreenState extends State<SplashScreen>
     }
     
     if (isLoggedIn) {
+      try {
+        await AppStateScope.of(context).fetchUser();
+      } catch (_) {}
+      if (!mounted) return;
       Navigator.pushReplacementNamed(context, AppRoutes.shell);
     } else {
       Navigator.pushReplacementNamed(context, AppRoutes.onboarding);

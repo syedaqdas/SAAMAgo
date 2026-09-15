@@ -20,17 +20,17 @@ class ItemCard extends StatelessWidget {
     return InkWell(
       onTap: () =>
           Navigator.pushNamed(context, AppRoutes.itemDetails, arguments: item),
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(18),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.cardSurface,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 18,
-              offset: const Offset(0, 10),
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -40,7 +40,7 @@ class ItemCard extends StatelessWidget {
           children: [
             Hero(
               tag: 'item-${item.id}',
-              child: _ItemThumbnail(item: item, height: compact ? 104 : 128),
+              child: _ItemThumbnail(item: item, height: compact ? 116 : 148),
             ),
             Padding(
               padding: const EdgeInsets.all(12),
@@ -48,73 +48,108 @@ class ItemCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
-                          item.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w900),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              item.category,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: AppColors.secondaryText, fontSize: 12),
+                            ),
+                          ],
                         ),
                       ),
                       IconButton(
-                        tooltip: item.isFavourite
-                            ? 'Remove favourite'
-                            : 'Add favourite',
+                        tooltip: item.isFavourite ? 'Remove favourite' : 'Add favourite',
                         visualDensity: VisualDensity.compact,
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.zero,
                         onPressed: () => store.toggleFavourite(item.id),
                         icon: Icon(
-                          item.isFavourite
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          color: item.isFavourite
-                              ? AppColors.error
-                              : AppColors.secondaryText,
-                          size: 20,
+                          item.isFavourite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          color: item.isFavourite ? AppColors.error : AppColors.mutedText,
+                          size: 22,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${AppFormatters.rupees(item.pricePerDay)} / day',
-                    style: const TextStyle(
-                      color: AppColors.lightPurple,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(
-                        Icons.place_rounded,
-                        color: AppColors.secondaryText,
-                        size: 14,
+                      Text(
+                        AppFormatters.rupees(item.pricePerDay),
+                        style: const TextStyle(
+                          color: AppColors.primaryTeal,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                        ),
                       ),
+                      const Text(
+                        ' / day',
+                        style: TextStyle(color: AppColors.secondaryText, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Icon(Icons.place_rounded, color: AppColors.secondaryText, size: 13),
                       const SizedBox(width: 4),
                       Text(
                         '${item.distanceKm.toStringAsFixed(1)} km',
-                        style: const TextStyle(
-                          color: AppColors.secondaryText,
-                          fontSize: 12,
-                        ),
+                        style: const TextStyle(color: AppColors.secondaryText, fontSize: 11, fontWeight: FontWeight.w600),
                       ),
                       const Spacer(),
-                      const Icon(
-                        Icons.star_rounded,
-                        color: AppColors.warning,
-                        size: 14,
+                      Icon(
+                        item.isAvailable ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                        color: item.isAvailable ? AppColors.success : AppColors.error,
+                        size: 13,
                       ),
-                      const SizedBox(width: 3),
+                      const SizedBox(width: 4),
                       Text(
-                        item.rating.toStringAsFixed(1),
-                        style: const TextStyle(
-                          color: AppColors.secondaryText,
-                          fontSize: 12,
+                        item.isAvailable ? 'Available' : 'Unavailable',
+                        style: TextStyle(
+                          color: item.isAvailable ? AppColors.success : AppColors.error,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
+                  if (!compact) ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 36,
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: item.isAvailable ? () => Navigator.pushNamed(context, AppRoutes.itemDetails, arguments: item) : null,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.elevatedCard,
+                          disabledBackgroundColor: AppColors.elevatedCard.withValues(alpha: 0.5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: Text(
+                          item.isAvailable ? 'Borrow Now' : 'Not Available',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: item.isAvailable ? AppColors.primaryTeal : AppColors.mutedText,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -145,12 +180,15 @@ class _ItemThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (item.imagePath != null) {
+      final isNetwork = item.imagePath!.startsWith('http');
       return Container(
         height: height,
         width: double.infinity,
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: FileImage(File(item.imagePath!)),
+            image: isNetwork 
+                ? NetworkImage(item.imagePath!) as ImageProvider 
+                : FileImage(File(item.imagePath!)),
             fit: BoxFit.cover,
           ),
         ),

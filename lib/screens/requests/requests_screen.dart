@@ -8,6 +8,7 @@ import '../../core/widgets/item_card.dart';
 import '../../core/widgets/status_chip.dart';
 import '../../data/app_state.dart';
 import '../../models/rental_request.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RequestsScreen extends StatefulWidget {
   const RequestsScreen({super.key, this.showAppBar = false});
@@ -58,7 +59,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 return ChoiceChip(
                   label: Text(tab.label),
                   selected: selected,
-                  selectedColor: AppColors.primaryPurple,
+                  selectedColor: AppColors.primaryBlue,
                   backgroundColor: AppColors.chip,
                   side: const BorderSide(color: AppColors.border),
                   labelStyle: TextStyle(
@@ -72,36 +73,75 @@ class _RequestsScreenState extends State<RequestsScreen> {
               },
             ),
           ),
+          if (store.requestsError != null && requests.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.wifi_off_rounded, size: 16, color: AppColors.error),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        store.requestsError!,
+                        style: const TextStyle(fontSize: 12, color: AppColors.error, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: store.fetchRequests,
+                      child: const Text('Retry', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 220),
-              child: requests.isEmpty
-                  ? EmptyState(
-                      key: ValueKey(_status?.name ?? 'all-empty'),
-                      icon: Icons.receipt_long_rounded,
-                      title: 'No requests',
-                      message: 'Requests with this status will appear here.',
-                      actionLabel: 'Explore Items',
-                      onAction: () => Navigator.pushNamed(
-                        context,
-                        AppRoutes.shell,
-                        arguments: 1,
-                      ),
-                    )
-                  : ListView.separated(
-                      key: ValueKey(_status?.name ?? 'all-list'),
-                      padding: EdgeInsets.fromLTRB(
-                        20,
-                        8,
-                        20,
-                        widget.showAppBar ? 24 : 112,
-                      ),
-                      itemCount: requests.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 12),
-                      itemBuilder: (context, index) =>
-                          _RequestCard(request: requests[index]),
-                    ),
+              child: store.isRequestsLoading && requests.isEmpty
+                  ? const Center(key: ValueKey('loading'), child: CircularProgressIndicator())
+                  : store.requestsError != null && requests.isEmpty
+                      ? EmptyState(
+                          key: const ValueKey('error'),
+                          icon: Icons.wifi_off_rounded,
+                          title: 'Unable to load requests',
+                          message: store.requestsError!,
+                          actionLabel: 'Try Again',
+                          onAction: store.fetchRequests,
+                        )
+                      : requests.isEmpty
+                          ? EmptyState(
+                              key: ValueKey(_status?.name ?? 'all-empty'),
+                              icon: Icons.receipt_long_rounded,
+                              title: 'No requests',
+                              message: 'Requests with this status will appear here.',
+                              actionLabel: 'Explore Items',
+                              onAction: () => Navigator.pushNamed(
+                                context,
+                                AppRoutes.shell,
+                                arguments: 1,
+                              ),
+                            )
+                          : ListView.separated(
+                              key: ValueKey(_status?.name ?? 'all-list'),
+                              padding: EdgeInsets.fromLTRB(
+                                20,
+                                8,
+                                20,
+                                widget.showAppBar ? 24 : 112,
+                              ),
+                              itemCount: requests.length,
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(height: 12),
+                              itemBuilder: (context, index) =>
+                                  _RequestCard(request: requests[index]),
+                            ),
             ),
           ),
         ],
@@ -195,10 +235,49 @@ class _RequestCard extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w900),
                       ),
                       const Spacer(),
-                      TextButton(
-                        onPressed: () => _handleAction(context),
-                        child: Text(_actionLabel(request.status)),
-                      ),
+                      if (request.status == RequestStatus.pending && FirebaseAuth.instance.currentUser?.uid == request.ownerId) ...[
+                        TextButton(
+                          onPressed: () async {
+                            try {
+                              await AppStateScope.of(context).updateRequestStatus(request.id, RequestStatus.rejected);
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(e.toString().replaceAll('Exception: ', '')),
+                                    backgroundColor: AppColors.error,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text('Reject', style: TextStyle(color: AppColors.error)),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            try {
+                              await AppStateScope.of(context).updateRequestStatus(request.id, RequestStatus.accepted);
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(e.toString().replaceAll('Exception: ', '')),
+                                    backgroundColor: AppColors.error,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text('Accept'),
+                        ),
+                      ] else ...[
+                        TextButton(
+                          onPressed: () => _handleAction(context),
+                          child: Text(_actionLabel(request.status)),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -216,13 +295,14 @@ class _RequestCard extends StatelessWidget {
       RequestStatus.accepted => 'Chat',
       RequestStatus.completed => 'Review',
       RequestStatus.cancelled => 'Rebook',
+      RequestStatus.rejected => 'Rebook',
     };
   }
 
   void _handleAction(BuildContext context) {
     switch (request.status) {
       case RequestStatus.accepted:
-        Navigator.pushNamed(context, AppRoutes.chat, arguments: request.item);
+        Navigator.pushNamed(context, AppRoutes.chat, arguments: request);
         return;
       case RequestStatus.completed:
         Navigator.pushNamed(context, AppRoutes.reviews);

@@ -35,18 +35,27 @@ class _BorrowConfirmationScreenState extends State<BorrowConfirmationScreen> {
     if (!mounted) {
       return;
     }
-    AppStateScope.of(
-      context,
-    ).addBorrowRequest(widget.item, _durationDays, _total);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Borrow request created as Pending.')),
-    );
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      AppRoutes.shell,
-      (route) => false,
-      arguments: 3,
-    );
+    try {
+      await AppStateScope.of(
+        context,
+      ).addBorrowRequest(widget.item, _durationDays, _total);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Borrow request created as Pending.')),
+      );
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.shell,
+        (route) => false,
+        arguments: 3,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+      );
+    }
   }
 
   @override
@@ -81,7 +90,7 @@ class _BorrowConfirmationScreenState extends State<BorrowConfirmationScreen> {
                         Text(
                           '${AppFormatters.rupees(widget.item.pricePerDay)} / day',
                           style: const TextStyle(
-                            color: AppColors.lightPurple,
+                            color: AppColors.primaryTeal,
                             fontWeight: FontWeight.w800,
                           ),
                         ),

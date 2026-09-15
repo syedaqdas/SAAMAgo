@@ -69,7 +69,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
                                 width: 42,
                                 height: 42,
                                 decoration: BoxDecoration(
-                                  gradient: AppColors.purpleGradient,
+                                  gradient: AppColors.brandGradient,
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: AppColors.primaryText,
@@ -137,7 +137,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
                           Text(
                             '${AppFormatters.rupees(selected.pricePerDay)} / day',
                             style: const TextStyle(
-                              color: AppColors.lightPurple,
+                              color: AppColors.primaryTeal,
                               fontWeight: FontWeight.w900,
                             ),
                           ),

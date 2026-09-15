@@ -33,7 +33,7 @@ class SaamaGoWordmark extends StatelessWidget {
           ),
           TextSpan(
             text: 'go',
-            style: TextStyle(color: AppColors.primaryPurple),
+            style: TextStyle(color: AppColors.primaryBlue),
           ),
         ],
       ),

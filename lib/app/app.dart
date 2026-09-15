@@ -102,7 +102,7 @@ class _SaamaGoAppState extends State<SaamaGoApp> {
         page = const RequestsScreen(showAppBar: true);
         break;
       case AppRoutes.chat:
-        page = ChatScreen(item: settings.arguments as RentalItem?);
+        page = ChatScreen(args: settings.arguments);
         break;
       case AppRoutes.wallet:
         page = const WalletScreen(showAppBar: true);

@@ -75,7 +75,7 @@ class _LocationIllustration extends StatelessWidget {
         child: const Center(
           child: Icon(
             Icons.location_pin,
-            color: AppColors.primaryPurple,
+            color: AppColors.primaryBlue,
             size: 76,
           ),
         ),
@@ -89,11 +89,11 @@ class _LocationPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final grid = Paint()
-      ..color = AppColors.primaryPurple.withValues(alpha: 0.12)
+      ..color = AppColors.primaryBlue.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
     final fill = Paint()
-      ..color = AppColors.primaryPurple.withValues(alpha: 0.08);
+      ..color = AppColors.primaryBlue.withValues(alpha: 0.08);
 
     canvas.drawCircle(center, size.width * 0.42, fill);
     for (var i = 1; i <= 4; i++) {

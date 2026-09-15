@@ -32,7 +32,7 @@ class ReferAndEarnScreen extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             AppPanel(
-              gradient: AppColors.purpleGradient,
+              gradient: AppColors.brandGradient,
               child: Row(
                 children: [
                   const Expanded(
@@ -126,10 +126,10 @@ class _ReferralIllustration extends StatelessWidget {
         width: 190,
         height: 150,
         decoration: BoxDecoration(
-          color: AppColors.primaryPurple.withValues(alpha: 0.12),
+          color: AppColors.primaryBlue.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(38),
           border: Border.all(
-            color: AppColors.primaryPurple.withValues(alpha: 0.24),
+            color: AppColors.primaryBlue.withValues(alpha: 0.24),
           ),
         ),
         child: const Stack(
@@ -209,7 +209,7 @@ class _HowItWorksRow extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 14,
-            backgroundColor: AppColors.primaryPurple,
+            backgroundColor: AppColors.primaryBlue,
             child: Text(
               number,
               style: const TextStyle(fontWeight: FontWeight.w900),

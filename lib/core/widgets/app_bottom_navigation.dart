@@ -79,12 +79,12 @@ class AppBottomNavigation extends StatelessWidget {
                   width: 62,
                   height: 62,
                   decoration: BoxDecoration(
-                    gradient: AppColors.purpleGradient,
+                    gradient: AppColors.brandGradient,
                     shape: BoxShape.circle,
                     border: Border.all(color: AppColors.background, width: 5),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primaryPurple.withValues(alpha: 0.35),
+                        color: AppColors.primaryTeal.withValues(alpha: 0.35),
                         blurRadius: 28,
                         offset: const Offset(0, 12),
                       ),
@@ -100,7 +100,7 @@ class AppBottomNavigation extends StatelessWidget {
             ),
           ),
           const Positioned(
-            top: 62,
+            top: 64,
             child: Text(
               'List',
               style: TextStyle(
@@ -131,7 +131,7 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? AppColors.primaryPurple : AppColors.secondaryText;
+    final color = active ? AppColors.primaryTeal : AppColors.secondaryText;
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -142,7 +142,7 @@ class _NavButton extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color, size: 22),
+              Icon(icon, color: color, size: 24),
               const SizedBox(height: 4),
               Text(
                 label,
