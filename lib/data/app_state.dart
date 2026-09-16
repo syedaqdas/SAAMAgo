@@ -237,6 +237,25 @@ class SaamaGoStore extends ChangeNotifier {
     }
   }
 
+  Future<void> cancelRequest(String id) async {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid != null) {
+      try {
+        await _borrowRequestService.cancelRequest(id, currentUid);
+      } catch (e) {
+        throw Exception(_parseError(e));
+      }
+    } else {
+      // Mock behavior for Developer Login
+      final index = _requests.indexWhere((req) => req.id == id);
+      if (index != -1) {
+        _requests[index] = _requests[index].copyWith(status: RequestStatus.cancelled);
+        notifyListeners();
+        _savePersistedRequests();
+      }
+    }
+  }
+
   String _parseError(Object error) {
     final str = error.toString().toLowerCase();
     if (str.contains('unavailable') || str.contains('network') || str.contains('offline')) {

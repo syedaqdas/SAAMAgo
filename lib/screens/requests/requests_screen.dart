@@ -159,10 +159,17 @@ class _RequestsScreenState extends State<RequestsScreen> {
   }
 }
 
-class _RequestCard extends StatelessWidget {
+class _RequestCard extends StatefulWidget {
   const _RequestCard({required this.request});
 
   final RentalRequest request;
+
+  @override
+  State<_RequestCard> createState() => _RequestCardState();
+}
+
+class _RequestCardState extends State<_RequestCard> {
+  bool _isCancelling = false;
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +177,7 @@ class _RequestCard extends StatelessWidget {
       onTap: () => Navigator.pushNamed(
         context,
         AppRoutes.itemDetails,
-        arguments: request.item,
+        arguments: widget.request.item,
       ),
       borderRadius: BorderRadius.circular(22),
       child: Container(
@@ -188,7 +195,7 @@ class _RequestCard extends StatelessWidget {
               height: 84,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(18),
-                child: ItemThumbnail(item: request.item, height: 84),
+                child: ItemThumbnail(item: widget.request.item, height: 84),
               ),
             ),
             const SizedBox(width: 12),
@@ -201,19 +208,19 @@ class _RequestCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          request.item.name,
+                          widget.request.item.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontWeight: FontWeight.w900),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      StatusChip.forRequest(request.status),
+                      StatusChip.forRequest(widget.request.status),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${request.durationDays} days · ${request.dateLabel}',
+                    '${widget.request.durationDays} days · ${widget.request.dateLabel}',
                     style: const TextStyle(
                       color: AppColors.secondaryText,
                       fontSize: 12,
@@ -221,7 +228,7 @@ class _RequestCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'With ${request.personName}',
+                    'With ${widget.request.personName}',
                     style: const TextStyle(
                       color: AppColors.secondaryText,
                       fontSize: 12,
@@ -231,15 +238,15 @@ class _RequestCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        AppFormatters.rupees(request.amount),
+                        AppFormatters.rupees(widget.request.amount),
                         style: const TextStyle(fontWeight: FontWeight.w900),
                       ),
                       const Spacer(),
-                      if (request.status == RequestStatus.pending && FirebaseAuth.instance.currentUser?.uid == request.ownerId) ...[
+                      if (widget.request.status == RequestStatus.pending && FirebaseAuth.instance.currentUser?.uid == widget.request.ownerId) ...[
                         TextButton(
                           onPressed: () async {
                             try {
-                              await AppStateScope.of(context).updateRequestStatus(request.id, RequestStatus.rejected);
+                              await AppStateScope.of(context).updateRequestStatus(widget.request.id, RequestStatus.rejected);
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -257,7 +264,7 @@ class _RequestCard extends StatelessWidget {
                         TextButton(
                           onPressed: () async {
                             try {
-                              await AppStateScope.of(context).updateRequestStatus(request.id, RequestStatus.accepted);
+                              await AppStateScope.of(context).updateRequestStatus(widget.request.id, RequestStatus.accepted);
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -274,8 +281,14 @@ class _RequestCard extends StatelessWidget {
                         ),
                       ] else ...[
                         TextButton(
-                          onPressed: () => _handleAction(context),
-                          child: Text(_actionLabel(request.status)),
+                          onPressed: _isCancelling ? null : () => _handleAction(context),
+                          child: _isCancelling && widget.request.status == RequestStatus.pending
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : Text(_actionLabel(widget.request.status)),
                         ),
                       ],
                     ],
@@ -299,20 +312,41 @@ class _RequestCard extends StatelessWidget {
     };
   }
 
-  void _handleAction(BuildContext context) {
-    switch (request.status) {
+  void _handleAction(BuildContext context) async {
+    switch (widget.request.status) {
       case RequestStatus.accepted:
-        Navigator.pushNamed(context, AppRoutes.chat, arguments: request);
+        Navigator.pushNamed(context, AppRoutes.chat, arguments: widget.request);
         return;
       case RequestStatus.completed:
         Navigator.pushNamed(context, AppRoutes.reviews);
         return;
-      default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${_actionLabel(request.status)} action is not yet available.'),
-          ),
-        );
+      case RequestStatus.pending:
+        setState(() => _isCancelling = true);
+        try {
+          await AppStateScope.of(context).cancelRequest(widget.request.id);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Request cancelled successfully.')),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(e.toString().replaceAll('Exception: ', '')),
+                backgroundColor: AppColors.error,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        } finally {
+          if (mounted) setState(() => _isCancelling = false);
+        }
+        return;
+      case RequestStatus.cancelled:
+      case RequestStatus.rejected:
+        Navigator.pushNamed(context, AppRoutes.itemDetails, arguments: widget.request.item);
+        return;
     }
   }
 }

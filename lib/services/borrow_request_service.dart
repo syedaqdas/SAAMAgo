@@ -75,7 +75,24 @@ class BorrowRequestService {
     });
   }
 
-  Future<void> cancelRequest(String id) async {
-    await updateRequestStatus(id, RequestStatus.cancelled);
+  Future<void> cancelRequest(String id, String currentUserId) async {
+    final docRef = _db.collection('borrow_requests').doc(id);
+    await _db.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+      if (!snapshot.exists) {
+        throw Exception('Request not found');
+      }
+      final data = snapshot.data()!;
+      if (data['borrowerId'] != currentUserId) {
+        throw Exception('Permission denied');
+      }
+      if (data['status'] != RequestStatus.pending.name) {
+        throw Exception('Request cannot be cancelled because it is already ${data['status']}');
+      }
+      transaction.update(docRef, {
+        'status': RequestStatus.cancelled.name,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
   }
 }

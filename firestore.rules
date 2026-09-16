@@ -57,7 +57,7 @@ service cloud.firestore {
                     && request.resource.data.status in ['pending', 'accepted', 'rejected', 'cancelled', 'completed']
                     && (
                         (request.auth.uid == resource.data.ownerId) ||
-                        (request.auth.uid == resource.data.borrowerId && request.resource.data.status == 'cancelled')
+                        (request.auth.uid == resource.data.borrowerId && request.resource.data.status == 'cancelled' && resource.data.status == 'pending')
                       );
       allow delete: if false;
     }
