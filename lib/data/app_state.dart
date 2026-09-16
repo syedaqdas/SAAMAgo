@@ -17,7 +17,6 @@ import '../services/user_service.dart';
 import '../services/listing_service.dart';
 import '../services/borrow_request_service.dart';
 import '../services/chat_service.dart';
-import 'mock_data.dart';
 
 class SaamaGoStore extends ChangeNotifier {
   final _userService = UserService();
@@ -26,12 +25,11 @@ class SaamaGoStore extends ChangeNotifier {
   final _chatService = ChatService();
   final _transactionService = TransactionService();
   SaamaGoStore()
-    : _items = List<RentalItem>.from(MockData.items),
-      _notifications = List<NotificationItem>.from(MockData.notifications),
-      _transactions = List<TransactionModel>.from(MockData.transactions),
-      _messages = List<ChatMessage>.from(MockData.messages),
-      _reviews = List<ReviewItem>.from(MockData.reviews) {
-    _requests.addAll(MockData.requests(_items));
+    : _items = [],
+      _notifications = [],
+      _transactions = [],
+      _messages = [],
+      _reviews = [] {
     _loadPersistedData();
   }
 
@@ -83,13 +81,13 @@ class SaamaGoStore extends ChangeNotifier {
     await prefs.setStringList('persistedRequests', jsonList);
   }
 
-  int _walletBalance = 2589;
+  int _walletBalance = 0;
   int get walletBalance => _walletBalance;
 
   UserModel _profile = UserModel(
-    uid: 'mock_uid',
-    phoneNumber: '+919876543210',
-    displayName: 'SAAMAgo User',
+    uid: '',
+    phoneNumber: '',
+    displayName: 'User',
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   );
@@ -339,7 +337,17 @@ class SaamaGoStore extends ChangeNotifier {
   String sortOption = 'Nearest';
   bool availableOnly = false;
 
-  List<String> get categories => MockData.categories;
+  List<String> get categories => const [
+    'All',
+    'Electronics',
+    'Books',
+    'Sports',
+    'Tools',
+    'Events',
+    'Furniture',
+    'Gaming',
+    'Music',
+  ];
   List<RentalItem> get items => List.unmodifiable(_items);
   List<RentalRequest> get requests => List.unmodifiable(_requests);
   List<NotificationItem> get notifications => List.unmodifiable(_notifications);

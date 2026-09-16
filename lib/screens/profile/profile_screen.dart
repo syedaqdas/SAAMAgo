@@ -196,7 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(width: 10),
               const Expanded(
-                child: _ProfileStat(label: 'Saved', value: '₹18.2k'),
+                child: _ProfileStat(label: 'Saved', value: '₹0'),
               ),
             ],
           ),

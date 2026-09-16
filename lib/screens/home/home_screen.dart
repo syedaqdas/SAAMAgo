@@ -248,27 +248,27 @@ class HomeScreen extends StatelessWidget {
             const SectionHeader(title: 'Your Dashboard'),
             const SizedBox(height: 14),
             Row(
-              children: const [
+              children: [
                 Expanded(
                   child: _MetricCard(
                     label: 'Borrowed',
-                    value: '2',
+                    value: '${store.profile.itemsBorrowed}',
                     icon: Icons.shopping_bag_rounded,
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: _MetricCard(
                     label: 'Lending',
-                    value: '1',
+                    value: '${store.profile.itemsLent}',
                     icon: Icons.handshake_rounded,
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: _MetricCard(
                     label: 'Requests',
-                    value: '3',
+                    value: '${store.requests.length}',
                     icon: Icons.receipt_rounded,
                   ),
                 ),

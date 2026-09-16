@@ -210,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: SecondaryButton(
                                 label: 'Google',
                                 icon: Icons.g_mobiledata_rounded,
-                                onPressed: () => _mockProvider('Google'),
+                                onPressed: () => _showUnavailableProvider('Google'),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -218,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: SecondaryButton(
                                 label: 'Apple',
                                 icon: Icons.apple_rounded,
-                                onPressed: () => _mockProvider('Apple'),
+                                onPressed: () => _showUnavailableProvider('Apple'),
                               ),
                             ),
                           ],
@@ -247,9 +247,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _mockProvider(String provider) {
+  void _showUnavailableProvider(String provider) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$provider sign-in is mocked for this demo.')),
+      SnackBar(content: Text('$provider sign-in is not currently available.')),
     );
   }
 }

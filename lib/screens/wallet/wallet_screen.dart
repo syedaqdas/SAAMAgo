@@ -90,7 +90,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   onPressed: () async {
                     setState(() => _isLoading = true);
                     await _paymentService.processPayment(
-                      amountInINR: 500, // Example fixed amount for demo
+                      amountInINR: 500, // Fixed amount for now
                       description: 'Wallet Top-up',
                       type: TransactionType.deposit,
                     );
@@ -103,15 +103,15 @@ class _WalletScreenState extends State<WalletScreen> {
           Row(
             children: const [
               Expanded(
-                child: _WalletMiniStat(label: 'Deposits', value: '₹5,000'),
+                child: _WalletMiniStat(label: 'Deposits', value: '₹0'),
               ),
               SizedBox(width: 10),
               Expanded(
-                child: _WalletMiniStat(label: 'Refunds', value: '₹2,411'),
+                child: _WalletMiniStat(label: 'Refunds', value: '₹0'),
               ),
               SizedBox(width: 10),
               Expanded(
-                child: _WalletMiniStat(label: 'Rewards', value: '₹250'),
+                child: _WalletMiniStat(label: 'Rewards', value: '₹0'),
               ),
             ],
           ),
@@ -138,7 +138,7 @@ class _WalletScreenState extends State<WalletScreen> {
             title: 'Recent Transactions',
             actionLabel: 'Filters',
             onAction: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Transaction filters are mocked.')),
+              const SnackBar(content: Text('Transaction filters are not yet available.')),
             ),
           ),
           const SizedBox(height: 10),

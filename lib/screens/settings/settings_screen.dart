@@ -31,12 +31,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _SettingsTile(
                     icon: Icons.person_rounded,
                     label: 'Account Settings',
-                    onTap: _mock,
+                    onTap: _showUnavailable,
                   ),
                   _SettingsTile(
                     icon: Icons.lock_rounded,
                     label: 'Privacy and Security',
-                    onTap: _mock,
+                    onTap: _showUnavailable,
                   ),
                   _SettingsTile(
                     icon: Icons.credit_card_rounded,
@@ -60,7 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.language_rounded,
                     label: 'Language',
                     trailingText: 'English',
-                    onTap: _mock,
+                    onTap: _showUnavailable,
                   ),
                   SwitchListTile(
                     secondary: const Icon(
@@ -73,11 +73,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (value) {
                       setState(() => _darkMode = true);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Dark mode remains enabled in this demo.',
+                          const SnackBar(
+                            content: Text(
+                              'Dark mode remains enabled.',
+                            ),
                           ),
-                        ),
                       );
                     },
                   ),
@@ -97,12 +97,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _SettingsTile(
                     icon: Icons.article_outlined,
                     label: 'Terms and Conditions',
-                    onTap: _mock,
+                    onTap: _showUnavailable,
                   ),
                   _SettingsTile(
                     icon: Icons.info_outline_rounded,
                     label: 'About SAAMAgo',
-                    onTap: _mock,
+                    onTap: _showUnavailable,
                   ),
                   _SettingsTile(
                     icon: Icons.person_pin_rounded,
@@ -148,9 +148,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _mock() {
+  void _showUnavailable() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('This settings action is mocked.')),
+      const SnackBar(content: Text('This settings action is not yet available.')),
     );
   }
 }

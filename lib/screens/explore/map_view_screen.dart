@@ -93,7 +93,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                  'Area refreshed with mock nearby items.',
+                                  'Area refreshed.',
                                 ),
                               ),
                             );

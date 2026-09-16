@@ -310,7 +310,7 @@ class _RequestCard extends StatelessWidget {
       default:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${_actionLabel(request.status)} action is mocked.'),
+            content: Text('${_actionLabel(request.status)} action is not yet available.'),
           ),
         );
     }

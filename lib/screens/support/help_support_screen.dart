@@ -17,7 +17,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   final _faqs = const [
     (
       'How do deposits work?',
-      'Deposits are mocked in this frontend demo and shown as held/refunded wallet entries.',
+      'Deposits are securely held and automatically refunded to your wallet when the item is returned safely.',
     ),
     (
       'How do I hand over an item?',
@@ -25,7 +25,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     ),
     (
       'Can I cancel a request?',
-      'Pending request cancellation is represented as a mocked local action.',
+      'Pending request cancellation is available in your requests tab.',
     ),
   ];
 
@@ -68,22 +68,22 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   _SupportTile(
                     icon: Icons.quiz_outlined,
                     label: 'FAQs',
-                    onTap: _mock,
+                    onTap: _showUnavailable,
                   ),
                   _SupportTile(
                     icon: Icons.contact_support_outlined,
                     label: 'Contact Us',
-                    onTap: _mock,
+                    onTap: _showUnavailable,
                   ),
                   _SupportTile(
                     icon: Icons.report_problem_outlined,
                     label: 'Report an Issue',
-                    onTap: _mock,
+                    onTap: _showUnavailable,
                   ),
                   _SupportTile(
                     icon: Icons.health_and_safety_outlined,
                     label: 'Safety Tips',
-                    onTap: _mock,
+                    onTap: _showUnavailable,
                   ),
                 ],
               ),
@@ -135,7 +135,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   PrimaryButton(
                     label: 'Chat with Support',
                     icon: Icons.support_agent_rounded,
-                    onPressed: _mock,
+                    onPressed: _showUnavailable,
                   ),
                 ],
               ),
@@ -146,10 +146,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     );
   }
 
-  void _mock() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Support action is mocked.')));
+  void _showUnavailable() {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context
+    ).showSnackBar(const SnackBar(content: Text('Support action is not yet available.')));
   }
 }
 

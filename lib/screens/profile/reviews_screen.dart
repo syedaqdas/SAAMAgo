@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/app_panel.dart';
 import '../../core/widgets/primary_button.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../data/app_state.dart';
 
 class ReviewsScreen extends StatelessWidget {
@@ -17,89 +18,76 @@ class ReviewsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
-            AppPanel(
-              child: Row(
-                children: [
-                  const Text(
-                    '4.9',
-                    style: TextStyle(fontSize: 48, fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      children: const [
-                        _RatingBar(label: '5', value: 0.86),
-                        _RatingBar(label: '4', value: 0.48),
-                        _RatingBar(label: '3', value: 0.18),
-                        _RatingBar(label: '2', value: 0.08),
-                        _RatingBar(label: '1', value: 0.02),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            for (final review in store.reviews) ...[
-              AppPanel(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: AppColors.elevatedCard,
-                      child: Text(
-                        review.reviewerName.isEmpty
-                            ? '?'
-                            : review.reviewerName[0],
+            if (store.reviews.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: EmptyState(
+                  icon: Icons.reviews_rounded,
+                  title: 'No Reviews Yet',
+                  message: 'This user has not received any reviews.',
+                ),
+              )
+            else
+              for (final review in store.reviews) ...[
+                AppPanel(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: AppColors.elevatedCard,
+                        child: Text(
+                          review.reviewerName.isEmpty
+                              ? '?'
+                              : review.reviewerName[0],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  review.reviewerName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w900,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    review.reviewerName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const Icon(
-                                Icons.star_rounded,
-                                color: AppColors.warning,
-                                size: 16,
-                              ),
-                              Text(review.rating.toStringAsFixed(1)),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            review.date,
-                            style: const TextStyle(
-                              color: AppColors.mutedText,
-                              fontSize: 12,
+                                const Icon(
+                                  Icons.star_rounded,
+                                  color: AppColors.warning,
+                                  size: 16,
+                                ),
+                                Text(review.rating.toStringAsFixed(1)),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            review.text,
-                            style: const TextStyle(
-                              color: AppColors.secondaryText,
-                              height: 1.45,
+                            const SizedBox(height: 4),
+                            Text(
+                              review.date,
+                              style: const TextStyle(
+                                color: AppColors.mutedText,
+                                fontSize: 12,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              review.text,
+                              style: const TextStyle(
+                                color: AppColors.secondaryText,
+                                height: 1.45,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-            ],
+                const SizedBox(height: 12),
+              ],
             const SizedBox(height: 8),
             PrimaryButton(
               label: 'Write a Review',
@@ -185,32 +173,3 @@ class ReviewsScreen extends StatelessWidget {
   }
 }
 
-class _RatingBar extends StatelessWidget {
-  const _RatingBar({required this.label, required this.value});
-
-  final String label;
-  final double value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          SizedBox(width: 18, child: Text(label)),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(99),
-              child: LinearProgressIndicator(
-                value: value,
-                minHeight: 7,
-                color: AppColors.primaryBlue,
-                backgroundColor: AppColors.border,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
